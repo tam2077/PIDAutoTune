@@ -1,79 +1,97 @@
-import sys,time, numpy as np
+
+import sys
+import os
+import threading
+
 sys.path.append(r"E:\Webots\lib\controller\python")
-from controller import Robot, Camera, DistanceSensor, GPS, Gyro, InertialUnit, Keyboard, Motor, Supervisor
+if(os.environ.get('WEBOTS_HOME') is not None):
+    print("WEBOTS_HOME found")
+    sys.path.append(os.environ.get('WEBOTS_HOME') + '//lib//controller//python')
+else:
+    print("WEBOTS_HOME is not defined, please set your environment variable correctly.")
+
+
+import numpy as np
+from controller import GPS, Gyro, InertialUnit, Motor, Supervisor
 
 from deepbots.supervisor.controllers.robot_supervisor_env import RobotSupervisorEnv
-from utilities import normalize_to_range
-from PPO_agent import PPOAgent, Transition
-
-from gym.spaces import Box, Discrete
-import numpy as np
+from gym.spaces import Box
 
 from deepbots.supervisor.controllers.robot_supervisor_env import RobotSupervisorEnv
-from utilities import normalize_to_range
-from PPO_agent import PPOAgent, Transition
 
-from gym.spaces import Box, Discrete
-import numpy as np
 import math
 from math import sin, cos
 from warnings import warn
-
-
+import random
 
 
 class DroneRobot(RobotSupervisorEnv):
+
     def __init__(self):
+        """
+        /*
+        * @brief Initializes the DroneRobot environment and sets default parameters.
+        *
+        * This constructor initializes the simulation environment, sets up the observation and action spaces,
+        * and defines key parameters such as PID gains, motor power, and episode configurations.
+        * Additionally, it configures the random seed for reproducibility and sets up the simulation timestep.
+        *
+        * @details
+        * - Initializes debug mode, random seed, and task status.
+        * - Configures observation and action spaces using Gym's `Box`.
+        * - Sets up PID gains with random initial values and motor power to zero.
+        * - Defines simulation parameters such as timestep and maximum steps per episode.
+        * - Maintains error tracking for the PID controller.
+        *
+        * @note The method assumes that the superclass `RobotSupervisorEnv` is correctly implemented.
+        */
+        """
         super().__init__()
-        # Define agent's observation space using Gym's Box, setting the lowest and highest possible values
-        self.FLYING_ALTITUDE = 1.0
-        self.altitude_integrator = 0
-        self.max_velocity = 600
+        self.debugMode = False  # Set to True to enable debug mode
+        self.randomSeed = 42
+        random.seed(self.randomSeed)  # Set the random seed for reproducibility
+        self.saveOK = False  # Set to True when the task is solved
+        self.location_bound = 5
+        self.angle_bound = 90
+        self.max_velocity = 150 #Max velocity
+    
+        self.avg_target_score = -20 #set this to define when the task is considered solved
+        self.previous_velocity = 0
 
-        self.position_weight = 1
-        self.rotation_weight = 1
-        self.velocity_weight = 1
+        self.target_location = [0,0,2]
 
-        self.target_location = [0,0,10] #Target location in X Y Z.
-
-        self.past_altitude_error = 0
-        self.past_pitch_error = 0
-        self.past_roll_error = 0
-        self.past_yaw_rate_error = 0
-        self.past_vx_error = 0
-        self.past_vy_error = 0
-
-        self.past_x_global = 0
-        self.past_y_global = 0
-        self.past_time = 0
         
-        self.height_desired = self.target_location[2]
+        self.past_errors = {"x": 0, "y": 0, "z": 0}
+        self.integral_errors = {"x": 0, "y": 0, "z": 0}
+        self.past_yaw_error = 0
+        
         self.last_ep_score = 0
 
         self.didOnce = False
         self.actionCount = 0
+        # Get the Webots simulation timestep
         self.timestep = self.getBasicTimeStep()
-
+        
+        self.dt = 1/200 # Run at 200 Hz
         self.cur_step_count = 0
-        self.steps_per_episode = 1000  # Max number of steps per episode
+        self.steps_per_episode = 3000  # Max number of steps per episode
         self.episode_score = 0  # Score accumulated during an episode
         self.episode_score_list = []  # A list to save all the episode scores, used to check if task is solved
-
-
-        #Init values to zero
-        self.gains_pid = {
-            'kp_att_y': 0,
-            'kd_att_y': 0,
+ 
+        self.yaw_gain = 0 #Yaw gain, Yaw is set to move the drone in the general direction of the goal
+        #Init values to random numbers
+        self.pid_gains = {
+            'X_P': random.uniform(0,100),
+            'X_I': random.uniform(0,100),
+            'X_D': random.uniform(0,100),
             
-            'kp_att_rp': 0,
-            'kd_att_rp': 0,
+            'Y_P': random.uniform(0,100),
+            'Y_I': random.uniform(0,100),
+            'Y_D': random.uniform(0,100),
             
-            'kp_vel_xy': 0,
-            'kd_vel_xy': 0,
-
-            'kp_z': 0,
-            'ki_z': 0,
-            'kd_z': 0
+            'Z_P': random.uniform(0,100),
+            'Z_I': random.uniform(0,100),
+            'Z_D': random.uniform(0,100),
         }
         self.motor_power = {
             'm1': 0,
@@ -85,138 +103,157 @@ class DroneRobot(RobotSupervisorEnv):
 
         """
         Drone Bot Spaces					
-        Num	Observation	    Min 	Max 		
-        0	Drone X	        -5	    5		
-        1	Drone Y	        -5  	5		
-        2	Drone Z	        -5  	5		
-        3	Rot X	    -0.261795	0.261795	#	
-        4	Rot Y	    -0.261795	0.261795	# Wrong, axis angle format	
-        5	Rot Z	    -0.261795	0.261795	#	
-        6	Rot W	        -1	    1		
-        7	Linear X	    -5  	5		
-        8	Linear Y	    -5  	5		
-        9	Linear Z	    -5  	5		
-        10	Angular X	    -5  	5		
-        11	Angular Y	    -5  	5		
-        12	Angular Z	    -5  	5	    
+        Num	Observation	    	
+        0	Drone X	        
+        1	Drone Y	        		
+        2	Drone Z	        		
+        3	Rot X	    	
+        4	Rot Y	    
+        5	Rot Z	    	
+        6	Rot W	        		
+        7	Linear X	 		
+        8	Linear Y	 		
+        9	Linear Z	 		
+        10	Angular X	 		
+        11	Angular Y		
+        12	Angular Z	    
         
         """
+        #All bounds set to infinite
         self.observation_space = Box(low=np.array([-np.inf,-np.inf,-np.inf,-np.inf,-np.inf,-np.inf,-np.inf,-np.inf,-np.inf,-np.inf,-np.inf,-np.inf]),
                                      high=np.array([np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf]),
                                      dtype=np.float64)
         # Define agent's action space using Gym's Discrete
 
-        """
-        Action space
-        'kp_att_y': 1, 
-        'kd_att_y': 0.5,
-        
-        'kp_att_rp': 0.5,
-        'kd_att_rp': 0.1,
-        
-        'kp_vel_xy': 2,
-        'kd_vel_xy': 0.5,
-
-        'kp_z': 10,
-        'ki_z': 5,
-        'kd_z': 5
-
-        count = 9
-
-        """
-        
-
         self.action_space = Box(low=np.array([0,0,0,0,0,0,0,0,0]),
-                                high=np.array([10,10,10,10,10,10,10,10,10]),
-                                dtype=np.float64)
+                                high=np.array([100,100,100,100,100,100,100,100,100]),
+                                dtype=np.float16)
         
         
         self.robot = self.getSelf()  # Grab the robot reference from the supervisor to access various robot methods
     
-        
-               
 
+    def update_motor_power(self, current_location):
+        """
+            /**
+            * @brief Updates the motor power for the drone based on the PID controller and the current location.
+            *
+            * This method calculates the error between the drone's current location and the target location for
+            * each axis (x, y, z) and adjusts the motor power accordingly using PID control. It also applies yaw
+            * control to align the drone towards the target direction. For testing purposes, yaw gain can be set to 
+            * zero.
+            *
+            * @param current_location A list containing the drone's current position (x, y, z) and yaw angle.
+            *
+            * @details
+            * - Computes proportional (P), integral (I), and derivative (D) terms for PID control on each axis.
+            * - Normalizes yaw angle errors to the range [-π, π].
+            * - Updates motor power values for maintaining stability and reaching the target location.
+            * - Clips motor power values to ensure they remain within the allowed range.
+            *
+            * @note Assumes the `current_location` input includes yaw as the third element.
+            * @see self.pid_gains, self.motor_power
+            */
 
-    
-    def constrain(self,value, min_val, max_val):
-        return min(max_val, max(min_val, value))
-
-    def pid_velocity_fixed_height_controller(self,actual_state, desired_state, gains_pid, dt):
-        control_commands = {
-            'altitude': 0,
-            'roll': 0,
-            'pitch': 0,
-            'yaw': 0
-        }
-        self.pid_horizontal_velocity_controller(actual_state, desired_state, gains_pid, dt)
-        self.pid_fixed_height_controller(actual_state, desired_state, gains_pid, dt, control_commands)
-        self.pid_attitude_controller(actual_state, desired_state, gains_pid, dt, control_commands)
-        motor_commands = self.motor_mixing(control_commands)
-        return motor_commands
-
-    def pid_fixed_height_controller(self,actual_state, desired_state, gains_pid, dt, control_commands):
-        #global past_time,past_altitude_error,past_pitch_error,past_roll_error,past_yaw_rate_error,past_vx_error,past_vy_error,altitude_integrator
-
-        altitude_error = desired_state['altitude'] - actual_state['altitude']
-        altitude_derivative_error = (altitude_error - self.past_altitude_error) / dt
-        control_commands['altitude'] = (
-            self.gains_pid['kp_z'] * self.constrain(altitude_error, -1, 1) +
-            self.gains_pid['kd_z'] * altitude_derivative_error +
-            gains_pid['ki_z']
-        )
-        self.altitude_integrator = altitude_error * dt
-        control_commands['altitude'] = (
-            gains_pid['kp_z'] * self.constrain(altitude_error, -1, 1) +
-            gains_pid['kd_z'] * altitude_derivative_error +
-            gains_pid['ki_z'] * self.altitude_integrator + 48
-        )
-        self.past_altitude_error = altitude_error
-
-    def motor_mixing(self,control_commands):
-        return {
-            'm1': control_commands['altitude'] - control_commands['roll'] + control_commands['pitch'] + control_commands['yaw'],
-            'm2': control_commands['altitude'] - control_commands['roll'] - control_commands['pitch'] - control_commands['yaw'],
-            'm3': control_commands['altitude'] + control_commands['roll'] - control_commands['pitch'] + control_commands['yaw'],
-            'm4': control_commands['altitude'] + control_commands['roll'] + control_commands['pitch'] - control_commands['yaw']
+        """
+        # Compute error between target and current position
+        error = {
+            "x": self.target_location[0] - current_location[0],
+            "y": self.target_location[1] - current_location[1],
+            "z": self.target_location[2] - current_location[2],
         }
 
-    def pid_attitude_controller(self,actual_state, desired_state, gains_pid, dt, control_commands):
-        #global past_time,past_altitude_error,past_pitch_error,past_roll_error,past_yaw_rate_error,past_vx_error,past_vy_error,altitude_integrator
-        
-        pitch_error = desired_state['pitch'] - actual_state['pitch']
-        pitch_derivative_error = (pitch_error - self.past_pitch_error) / dt
-        roll_error = desired_state['roll'] - actual_state['roll']
-        roll_derivative_error = (roll_error - self.past_roll_error) / dt
-        yaw_rate_error = desired_state['yaw_rate'] - actual_state['yaw_rate']
+        # Compute the angle (yaw) to target location in the xy-plane (in radians)
+        delta_x = self.target_location[0] - current_location[0]
+        delta_y = self.target_location[1] - current_location[1]
+        desired_yaw = math.atan2(delta_y, delta_x)
 
-        control_commands['roll'] = gains_pid['kp_att_rp'] * self.constrain(roll_error, -1, 1) + gains_pid['kd_att_rp'] * roll_derivative_error
-        control_commands['pitch'] = -gains_pid['kp_att_rp'] * self.constrain(pitch_error, -1, 1) - gains_pid['kd_att_rp'] * pitch_derivative_error
-        control_commands['yaw'] = gains_pid['kp_att_y'] * self.constrain(yaw_rate_error, -1, 1)
+        # Calculate the drone's current yaw angle (orientation in the xy-plane)
+        current_yaw = math.atan2(current_location[1], current_location[0])
 
-        self.past_pitch_error = pitch_error
-        self.past_roll_error = roll_error
-        self.past_yaw_rate_error = yaw_rate_error
+        # Calculate the error in yaw (angle difference), normalized to [-pi, pi]
+        error_yaw = desired_yaw - current_yaw
+        error_yaw = (error_yaw + math.pi) % (2 * math.pi) - math.pi
 
-    def pid_horizontal_velocity_controller(self,actual_state, desired_state, gains_pid, dt):
-        #global past_time,past_altitude_error,past_pitch_error,past_roll_error,past_yaw_rate_error,past_vx_error,past_vy_error,altitude_integrator
+        # Initialize motor power dictionary
+        motor_power = {
+            'm1': 0,
+            'm2': 0,
+            'm3': 0,
+            'm4': 0
+        }
 
-        vx_error = desired_state['vx'] - actual_state['vx']
-        vx_derivative = (vx_error - self.past_vx_error) / dt
-        vy_error = desired_state['vy'] - actual_state['vy']
-        vy_derivative = (vy_error - self.past_vy_error) / dt
+        # PID calculations for each axis (x, y, z)
+        for axis in ['x', 'y', 'z']:
+            # Proportional term (P)
+            P = self.pid_gains[f'{axis.upper()}_P'] * error[axis]
+            
+            # Integral term (I)
+            self.integral_errors[axis] += error[axis] * self.dt
+            I = self.pid_gains[f'{axis.upper()}_I'] * self.integral_errors[axis]
+            
+            # Derivative term (D)
+            D = self.pid_gains[f'{axis.upper()}_D'] * (error[axis] - self.past_errors[axis]) / self.dt
 
-        pitch_command = gains_pid['kp_vel_xy'] * self.constrain(vx_error, -1, 1) + gains_pid['kd_vel_xy'] * vx_derivative
-        roll_command = -gains_pid['kp_vel_xy'] * self.constrain(vy_error, -1, 1) - gains_pid['kd_vel_xy'] * vy_derivative
+            # Total PID output for this axis
+            PID_output = P + I + D
 
-        desired_state['pitch'] = pitch_command
-        desired_state['roll'] = roll_command
+            # Update motor power based on the axis
+            if axis == "x":
+                motor_power['m1'] -= PID_output  # Adjust for roll (x-axis)
+                motor_power['m2'] += PID_output
+                motor_power['m3'] += PID_output
+                motor_power['m4'] -= PID_output
+            elif axis == "y":
+                motor_power['m1'] -= PID_output  # Adjust for pitch (y-axis)
+                motor_power['m2'] -= PID_output
+                motor_power['m3'] += PID_output
+                motor_power['m4'] += PID_output
+            elif axis == "z":
+                motor_power['m1'] += PID_output  # Adjust for vertical control
+                motor_power['m2'] += PID_output
+                motor_power['m3'] += PID_output
+                motor_power['m4'] += PID_output
 
-        self.past_vx_error = vx_error
-        self.past_vy_error = vy_error
+        # Yaw control using Proportional control (P only)
+        yaw_P = self.yaw_gain * error_yaw
+        motor_power['m1'] += yaw_P  # Adjust for yaw
+        motor_power['m2'] -= yaw_P
+        motor_power['m3'] += yaw_P
+        motor_power['m4'] -= yaw_P
+        #print("Pre-clipped motor power:", motor_power)
+        # Clip the values to ensure motors' power stays within reasonable limits
+        motor_power = {key: np.clip(value, 0, self.max_velocity) for key, value in motor_power.items()}
 
+        # Set motor power directly
+        self.motor_power = motor_power
+
+        # Update past errors for the next iteration
+        for axis in ['x', 'y', 'z']:
+            self.past_errors[axis] = error[axis]
+        self.past_errors['yaw'] = error_yaw
+        #print(self.motor_power)
 
     def axis_angle_to_euler(self,axis_angle):
-        """Convert an axis-angle representation to Euler angles (in degrees)."""
+        """
+            /**
+            * @brief Converts an axis-angle representation to Euler angles in degrees.
+            *
+            * This method takes a 4D vector representing an axis-angle (x, y, z, angle)
+            * and converts it to the corresponding Euler angles (roll, pitch, yaw) in degrees.
+            *
+            * @param axis_angle A list or tuple containing the axis components (x, y, z) and the rotation angle.
+            * @return A tuple (roll, pitch, yaw) representing the Euler angles in degrees.
+            *
+            * @details
+            * - Normalizes the axis vector if its magnitude is non-zero.
+            * - Converts the axis-angle to a quaternion and then to Euler angles.
+            * - Handles edge cases to ensure angles are properly constrained.
+            *
+            * @note The input angle is expected in radians.
+            */
+
+        """
         x, y, z, angle = axis_angle
         
         # Normalize the axis vector
@@ -254,104 +291,148 @@ class DroneRobot(RobotSupervisorEnv):
         return roll, pitch, yaw
 
     def get_observations(self):
+        """
+            /**
+            * @brief Retrieves the current state of the drone as observations.
+            *
+            * This method gathers the drone's current position, orientation, and velocity, and combines them
+            * into a single observation vector.
+            *
+            * @return A numpy array containing the concatenated observations: 
+            *         [position (x, y, z), rotation (roll, pitch, yaw), velocity (linear and angular)].
+            *
+            * @details
+            * - The position is obtained from the `translation` field of the robot.
+            * - The rotation is converted from axis-angle representation to Euler angles using `axis_angle_to_euler`.
+            * - The velocity includes both linear and angular components.
+            *
+            * @note Assumes that the Webots simulation provides the required fields and velocity information.
+            * @see axis_angle_to_euler
+            */
+
+        """
 
         posField = self.robot.getField("translation")
         rotField = self.robot.getField("rotation")
-        
-
         drone_position = posField.getSFVec3f()
-        #drone_position = self.robot.getPosition()
 
         drone_rotation = rotField.getSFRotation()
         drone_rotation = self.axis_angle_to_euler(drone_rotation)
-
         speed = self.robot.getVelocity()
-        #print(f"Drone Speed is {speed}")
-        #print(f"Drone position {drone_position}")
-        #print(f"position observation {np.round(drone_position,6)}")
-        #print(f"rotation observation {drone_rotation}")
-        #print(f"speed observation {np.round(speed,6)}")
         observation = np.concatenate([drone_position, drone_rotation, speed])
         
         return observation
 
     def get_default_observation(self):
+        """
+            /**
+            * @brief Provides a default observation vector.
+            *
+            * This method returns a default observation consisting of zero values, which matches the shape
+            * of the observation space.
+            *
+            * @return A list of zeros with a length equal to the number of dimensions in the observation space.
+            *
+            * @details
+            * - The default observation is used as a placeholder or initialization value when no meaningful
+            *   observation data is available.
+            */
+
+        """
         # This method just returns a zero vector as a default observation
         return [0.0 for _ in range(self.observation_space.shape[0])]
 
-    # def get_reward(self, action=None):
-    # # Calculate the position faults
-    #     x_fault = self.get_observations()[0] - self.target_location[0]
-    #     y_fault = self.get_observations()[1] - self.target_location[1]
-    #     z_fault = self.get_observations()[2] - self.target_location[2]
+    def get_reward(self, action=None):
+        """
+            /**
+            * @brief Computes the reward based on the drone's current state and actions.
+            *
+            * This method evaluates the drone's performance in the environment by calculating a composite reward
+            * that combines various factors such as distance to the target, stability, efficiency, and task completion.
+            *
+            * @param action (Optional) The action taken by the drone, though not directly used in the current implementation.
+            * @return A float value representing the computed reward for the current timestep.
+            *
+            * @details
+            * - **Distance to Target:** A quadratic penalty based on the squared distance to the target location.
+            * - **Stability Reward:** Penalizes abrupt changes in velocity.
+            * - **Efficiency Reward:** Adds a small time penalty to encourage faster task completion.
+            * - **Stay Penalty:** Penalizes the drone for staying near the origin after a certain number of steps.
+            * - **Direction Reward:** Rewards the drone for moving in the direction of the target.
+            * - **Goal Bonus:** Provides a significant reward for reaching the target location.
+            * - **Time Penalty:** Encourages efficiency by applying a small penalty for each timestep.
+            *
+            * @note This function assumes observations include position and velocity as described in `get_observations`.
+            */
 
-    #     # Combine position faults into a single array
-    #     position_fault = np.array([x_fault, y_fault, z_fault])
-        
-    #     # Calculate the rotation fault (assuming target angles are all zero)
-    #     rotation_fault = np.abs(self.get_observations()[3:6])
-        
-    #     #Asymptotic reward for surviving longer, caps at 1000 
-    #     #survival_reward = 1000 * (1 - np.exp(-0.005 * self.cur_step_count))
-    #     survival_reward = 0
-    #     #Asymptotic reward for velocity near target, velocity should approach zero when approaching target
-    #     #rms_velocity = 
-    #     #velocity_reward = 
-
-    #     # Calculate the reward based on position and rotation faults
-    #     reward = -self.position_weight * np.sum(np.square(position_fault)) \
-    #              -self.rotation_weight * np.sum(np.square(rotation_fault)) \
-    #              +survival_reward
-        
-    #     # Optional: Cap the reward at a minimum value to avoid very large penalties
-    #     #reward = max(reward, -10)
-        
-    #     # Add the reward to the episode score
-    #     self.last_ep_score += reward
-        
-    #     return reward
-
-    def get_reward(self, action):
-        # Get the observations
+        """
         observations = self.get_observations()
         
-        # Calculate distance to target
+        # Distance to target
         distance_to_target = np.linalg.norm(observations[:3] - self.target_location)
-        
-        # Reward for getting closer to target
-        reward_distance = -distance_to_target
-        
-        # Penalize for unstable movements (e.g., large changes in velocity or acceleration)
-        velocity = observations[3:6]
-        reward_stability = -np.linalg.norm(velocity)
-        
-        # Reward for efficiency (e.g., reaching target quickly)
-        reward_efficiency = -self.getTime()
-        
-        start_location = np.array([0, 0, 0])  # assuming the starting location is (0, 0, 0)
-        current_location = observations[:3]
-        distance_from_start = np.linalg.norm(current_location - start_location)
-        if distance_from_start < 0.2:  # adjust this value to define "staying in place"
-            reward_stay_penalty = -50  # adjust this value to define the penalty
-        else:
-            reward_stay_penalty = 0
+        reward_distance = -distance_to_target**2  # Quadratic penalty
 
-        if np.linalg.norm(observations[:3] - self.target_location) < 0.1:
-            goal_bonus = 10
-        else:
-            goal_bonus = 0
-        
+        # Stability reward (encourage smooth movement)
+        velocity = observations[3:6]
+        velocity_change = np.linalg.norm(velocity - self.previous_velocity)
+        reward_stability = -0.1 * velocity_change
+
+        # Efficiency reward (smaller time penalty)
+        reward_efficiency = -0.01 * self.cur_step_count
+
+        # Penalty for staying near the origin
+        start_location = np.array([0, 0, 0])
+        distance_from_start = np.linalg.norm(observations[:3] - start_location)
+        reward_stay_penalty = -50 if distance_from_start < 0.1 and self.cur_step_count > 100 else 0
+
+        # Direction reward (encourage moving toward the target)
+        direction = (self.target_location - observations[:3]) / np.linalg.norm(self.target_location - observations[:3])
+        reward_direction = max(0, np.dot(direction, velocity))  # Positive reward
+
+        # Goal bonus (larger incentive for success)
+        goal_bonus = 50 if distance_to_target < 0.1 else 0
+
+        # Time penalty (encourage faster task completion)
         time_penalty = -0.01 * self.cur_step_count
 
         # Combine rewards
-        reward = reward_distance + 0.1 * reward_stability + 0.01 * reward_efficiency + reward_stay_penalty + goal_bonus + time_penalty
+        reward = (
+            reward_distance 
+            + 0.1 * reward_stability 
+            + reward_efficiency 
+            + reward_stay_penalty 
+            + reward_direction 
+            + goal_bonus 
+            + time_penalty
+        )
+        
+        self.previous_velocity = velocity
         self.last_ep_score = reward
+        
         return reward
+    
+    def is_done(self):    
+        """
+            /**
+            * @brief Checks whether the current episode is complete.
+            *
+            * This method evaluates conditions to determine if the episode should terminate, such as exceeding
+            * step limits, going out of bounds, or exceeding angular constraints.
+            *
+            * @return `True` if the episode is complete, `False` otherwise.
+            *
+            * @details
+            * - **Step Count Trigger:** The episode ends if the current step count exceeds the maximum allowed steps.
+            * - **Location Bound Trigger:** The episode terminates if the drone's position deviates beyond a predefined
+            *   bound from the target location on any axis.
+            * - **Angle Bound Trigger:** The episode terminates if any rotational angle (roll, pitch, yaw) exceeds
+            *   the specified angular limit.
+            *
+            * @note Observations are fetched from `get_observations`, and positional and angular bounds are defined
+            *       within the function.
+            */
 
-    def is_done(self):
-              
-        bound = 15
-        angle_bound = 60
+        """  
         if self.cur_step_count >= self.steps_per_episode:
             print("\033[93mStep count triggered\033[0m")
             #warn("Step count triggered")
@@ -365,7 +446,7 @@ class DroneRobot(RobotSupervisorEnv):
 
         #print(x_fault,y_fault,z_fault)
 
-        if (x_fault > bound) or (y_fault > bound) or (z_fault > bound):
+        if (x_fault > self.location_bound) or (y_fault > self.location_bound) or (z_fault > self.location_bound):
             print("\033[93mLocation bound triggered\033[0m")
             #warn("Location bound triggered")
             #print("Location bound triggered")
@@ -373,50 +454,137 @@ class DroneRobot(RobotSupervisorEnv):
 
         angles = np.abs(self.get_observations()[3:6])
         #print(f"Angles are {angles}")
-        if (angles[0] > angle_bound) or (angles[1] > angle_bound) or (angles[2] > angle_bound):
+        if (angles[0] > self.angle_bound) or (angles[1] > self.angle_bound) or (angles[2] > self.angle_bound):
             #warn("Angle bound triggered")
             print("\033[93mAngle bound triggered\033[0m")
             #print("Angle bound triggered")
-            #return True
-            return True #Testing purposes
+            return True 
         else:
             return False
             
 
     def solved(self):
-        # if len(self.episode_score_list) > 100:  # Over 100 trials thus far
-        #     if np.mean(self.episode_score_list[-100:]) > 195.0:  # Last 100 episodes' scores average value
-        #         return True
+        """
+            /**
+            * @brief Determines if the task is considered "solved."
+            *
+            * The task is deemed solved if the mean score of the last 100 episodes exceeds
+            * a predefined threshold (`avg_target_score`), indicating consistent performance.
+            *
+            * @return `True` if the task is solved, `False` otherwise.
+            *
+            * @details
+            * - **Threshold Check:** The task is solved if the mean score of the last 100 episodes is greater than `avg_target_score`.
+            * - If the condition is met, the `saveOK` flag is set to `True`.
+            *
+            * @note Requires the `episode_score_list` to contain at least 100 episodes.
+            */
 
-        #For now, doesnt end
+        """
+        if len(self.episode_score_list) > 100:  # Last 100 trials
+            mean_score = np.mean(self.episode_score_list[-100:])
+            if mean_score > self.avg_target_score:  # Target a low average penalty
+                self.saveOK = True
+                return True
         return False
 
     def get_info(self):
+        """
+            /**
+            * @brief Provides additional information about the environment.
+            *
+            * This method returns a dictionary containing environment-specific details.
+            *
+            * @return A dictionary with key-value pairs representing additional environment information.
+            *
+            * @details
+            * - Currently, this method returns a placeholder dictionary `{"Dummy": "dummy"}`.
+            * - Can be extended to include meaningful diagnostic or metadata information.
+            */
+
+        """
 
         return {"Dummy": "dummy"}
+    def launchTensorBoard(self,log_path):
+        """
+            /**
+            * @brief Launches TensorBoard for monitoring training progress.
+            *
+            * This method runs a system command to start TensorBoard using the specified log directory.
+            *
+            * @param log_path The path to the directory containing TensorBoard log files.
+            *
+            * @details
+            * - Executes the command `tensorboard --logdir=<log_path>` to launch TensorBoard.
+            * - Requires TensorBoard to be installed and accessible from the system's command line.
+            *
+            * @note Ensure the specified `log_path` is valid and contains log files for visualization.
+            */
+        """
+        os.system('tensorboard --logdir=' + log_path)
+        return
+    def startTensorBoard(self,log_path):
+        """
+            /**
+            * @brief Starts TensorBoard in a separate thread.
+            *
+            * This method creates and starts a new thread to run TensorBoard, ensuring that it does not block the main process.
+            *
+            * @param log_path The path to the directory containing TensorBoard log files.
+            *
+            * @details
+            * - Internally calls `launchTensorBoard` in a separate thread.
+            * - Useful for starting TensorBoard asynchronously during training or simulation.
+            *
+            * @note Ensure the `log_path` is valid and TensorBoard is installed.
+            */
+        """
+        t = threading.Thread(target=self.launchTensorBoard, args=([log_path]))
+        t.start()
+        return
 
     def render(self, mode='human'):
+        """
+            /**
+            * @brief Renders the environment.
+            *
+            * This method is a placeholder for rendering the environment in various modes.
+            *
+            * @param mode The rendering mode (default is `"human"`).
+            *
+            * @details
+            * - Currently, this method is not implemented.
+            * - Can be extended to provide visualizations or other forms of rendering.
+            */
+        """
         pass
-
-
         ## THIS IS AN OVERRIDE FUNCTION ###
         # The actions must be applied once per episode instead of once per step since this is adjusting PID values
     def step(self, action):
+        """    /**
+     * @brief Executes a single simulation step, applying an action and updating the environment.
+     *
+     * This method steps the controller, applies the given action to the robot, and returns the resulting
+     * state of the environment, including observations, reward, termination status, and additional info.
+     *
+     * @param action The action to be applied to the robot, defined by the use case (e.g., integer for discrete actions).
+     * @return A tuple `(observations, reward, done, info)`:
+     *         - `observations`: Current state of the environment.
+     *         - `reward`: Reward received for the action taken.
+     *         - `done`: Boolean indicating whether the episode is complete.
+     *         - `info`: Additional diagnostic information.
+     *
+     * @details
+     * - Increments the step count and initializes motor devices if not already done.
+     * - Applies the action using `apply_action` and updates motor power with `update_motor_power`.
+     * - Fetches observations, computes the reward, and checks if the episode is done.
+     * - Handles integration with the Webots supervisor timestep.
+     *
+     * @note Assumes valid initialization of motors and sensors (e.g., GPS, IMU, gyro).
+     */
         """
-        The basic step method that steps the controller,
-        calls the method that applies the action on the robot
-        and returns the (observations, reward, done, info) object.
-
-        :param action: Whatever the use-case uses as an action, e.g.
-            an integer representing discrete actions
-        :type action: Defined by the implementation of handle_emitter
-        :return: tuple, (observations, reward, done, info) as provided by the
-            corresponding methods as implemented for the use-case
-        """ 
         self.cur_step_count += 1
-
-        # I have no fucking idea why this needs to be here. 
-        ## DOES NOT WORK IF DEFINED IN INIT
+        ## Needs to be defined in step to work properly
         self.m1_motor = self.getDevice('m1_motor') # type: Motor
         self.m1_motor.setPosition(float('inf'))
         
@@ -443,95 +611,23 @@ class DroneRobot(RobotSupervisorEnv):
             self.didOnce = True
         if super(Supervisor, self).step(self.timestep) == -1:
             exit()
-
-        dt = self.getTime() - self.past_time
-
         #get measurements
-        roll, pitch, yaw = self.imu.getRollPitchYaw()
-        yaw_rate = self.gyro.getValues()[2]
-        altitude = self.gps.getValues()[2]
-        x_global = self.gps.getValues()[0]
-        if(dt == 0):
-            dt = 0.001 # Random number to prevent division by zero
-        vx_global = (x_global - self.past_x_global) / dt
-        y_global = self.gps.getValues()[1]
-        vy_global = (y_global - self.past_y_global) / dt
-
-        # Get body fixed velocities
-        actual_yaw = roll
-        cosyaw = cos(actual_yaw)
-        sinyaw = sin(actual_yaw)
-        vx = vx_global * cosyaw + vy_global * sinyaw
-        vy = -vx_global * sinyaw + vy_global * cosyaw
-        
-        desired_state = {
-        'roll': 0,
-        'pitch': 0,
-        'vx': 0,
-        'vy': 0,
-        'yaw_rate': 0,
-        'altitude': self.height_desired
-        }
-        
-        forward_desired = 0
-        sideways_desired = 0
-        yaw_desired = 0
-        height_diff_desired = 0
-        
-        self.height_desired += height_diff_desired * dt
-
-        desired_state['yaw_rate'] = yaw_desired
-
-        # PID velocity controller with fixed height
-        desired_state['vy'] = sideways_desired
-        desired_state['vx'] = forward_desired
-        desired_state['altitude'] = self.height_desired
-
-        #PID Control Functions
-        self.motor_power = self.pid_velocity_fixed_height_controller(
-        actual_state={
-            'roll': roll,
-            'pitch': pitch,
-            'yaw_rate': yaw_rate,
-            'altitude': altitude,
-            'vx': vx,
-            'vy': vy
-        },
-        desired_state=desired_state,
-        gains_pid=self.gains_pid,
-        dt=dt
-        )
-
-        #print(f"motor power {self.motor_power}")
-        
-        
-        #self.m1_motor.setVelocity
+        observation = self.get_observations()
+        current_location = [
+            observation[0],
+            observation[1],
+            observation[2],
+        ]
+        self.update_motor_power(current_location)
+        self.m1_motor.setVelocity(-self.motor_power['m1'])
+        self.m2_motor.setVelocity(self.motor_power['m2'])
+        self.m3_motor.setVelocity(-self.motor_power['m3'])
+        self.m4_motor.setVelocity(self.motor_power['m4'])
         
 
-        self.m1_motor.setVelocity(np.clip(-self.motor_power['m1'],-self.max_velocity,self.max_velocity))
-        self.m2_motor.setVelocity(np.clip(self.motor_power['m2'],-self.max_velocity,self.max_velocity))
-        self.m3_motor.setVelocity(np.clip(-self.motor_power['m3'],-self.max_velocity,self.max_velocity))
-        self.m4_motor.setVelocity(np.clip(self.motor_power['m4'],-self.max_velocity,self.max_velocity))
-        # Save past time for next time step
-        self.past_time = self.getTime()
-        self.past_x_global = x_global
-        self.past_y_global = y_global
-        
-        # var = np.round([
-        # self.past_altitude_error,
-        # self.past_pitch_error,
-        # self.past_roll_error,
-        # self.past_yaw_rate_error,
-        # self.past_vx_error,
-        # self.past_vy_error,
-        # self.altitude_integrator
-        # ])
-        # #print(var)
-
-        
 
         return (
-            self.get_observations(),
+            observation,
             self.get_reward(action),
             self.is_done(),
             self.get_info(),
@@ -540,30 +636,23 @@ class DroneRobot(RobotSupervisorEnv):
     ## Guess what, another override function. Only change is to add and reset a flag
     def reset(self):
         """
-        Used to reset the world to an initial state.
-
-        Default, problem-agnostic, implementation of reset method,
-        using Webots-provided methods.
-
-        *Note that this works properly only with Webots versions >R2020b
-        and must be overridden with a custom reset method when using
-        earlier versions. It is backwards compatible due to the fact
-        that the new reset method gets overridden by whatever the user
-        has previously implemented, so an old supervisor can be migrated
-        easily to use this class.
-
-        :return: default observation provided by get_default_observation()
+            /**
+            * @brief Resets the environment to its initial state.
+            *
+            * This method restores the simulation to its default configuration by resetting motor power,
+            * step counters, error terms, and the Webots simulation state.
+            *
+            * @return A default observation, represented as a zero-filled numpy array matching the observation space shape.
+            *
+            * @details
+            * - Resets motor power values to zero and clears PID error terms.
+            * - Resets the Webots simulation state and physics using `simulationReset` and `simulationResetPhysics`.
+            * - Ensures compatibility with Webots versions >R2020b but can be overridden for earlier versions.
+            * - Calls `super().step` to integrate the reset state into the simulation timestep.
+            *
+            * @note This method is backward-compatible, allowing older supervisor implementations to be migrated.
+            */
         """
-        #Not sure about this, reset all global variables for now
-        self.past_altitude_error = 0
-        self.past_pitch_error = 0
-        self.past_roll_error = 0
-        self.past_yaw_rate_error = 0
-        self.past_vx_error = 0
-        self.past_vy_error = 0
-        self.past_x_global = 0
-        self.past_y_global = 0
-        #self.past_time = self.getTime()
 
         self.motor_power = {
             'm1': 0,
@@ -573,33 +662,66 @@ class DroneRobot(RobotSupervisorEnv):
         }
         self.cur_step_count = 0
         self.didOnce = False
+        self.past_errors = {"x": 0, "y": 0, "z": 0}
+        self.integral_errors = {"x": 0, "y": 0, "z": 0}
         self.simulationReset()
         self.simulationResetPhysics()
         super(Supervisor, self).step(self.timestep)
         #return self.get_default_observation()
         return np.zeros(self.observation_space.shape)
          
-    
-
-
-
-
 
     def apply_action(self, action):
+        """
+            /**
+            * @brief Applies the specified action to the drone by updating PID controller gains.
+            *
+            * This method sets the PID gains based on the provided action. If debug mode is active,
+            * the action is ignored, and default PID gains are used instead.
+            *
+            * @param action A list or array containing PID gain values for X, Y, and Z axes in the order:
+            *               [X_P, X_I, X_D, Y_P, Y_I, Y_D, Z_P, Z_I, Z_D].
+            *
+            * @details
+            * - In debug mode, fixed PID gains are applied, and the action parameter is ignored.
+            * - Outside debug mode, the PID gains are updated directly from the action input.
+            * - Resets the last episode score to zero after applying the action.
+            *
+            * @note Ensure that the action parameter contains exactly 9 elements representing the PID gains.
+            */
+
+        """
+
+        if self.debugMode == True:
+            print("Debug mode is active, ignoring model actions")
+            self.pid_gains = {
+            'X_P': 10,
+            'X_I': 10,
+            'X_D': 0.5,
+            
+            'Y_P': 10,
+            'Y_I': 10,
+            'Y_D': 0.5,
+            
+            'Z_P': 10,
+            'Z_I': 10,
+            'Z_D': 0.5,
+        }
+            
+        else:
+            print(f"Action is {action}")
+            self.pid_gains = {
+            'X_P': action[0],
+            'X_I': action[1],
+            'X_D': action[2],
+            
+            'Y_P': action[3],
+            'Y_I': action[4],
+            'Y_D': action[5],
+            
+            'Z_P': action[6],
+            'Z_I': action[7],
+            'Z_D': action[8],
+        }
         print(f"last episodes score {self.last_ep_score}")
         self.last_ep_score = 0
-        print(f"Action is {action}")
-        self.gains_pid = {
-            'kp_att_y': action[0],
-            'kd_att_y': action[1],
-            
-            'kp_att_rp': action[2],
-            'kd_att_rp': action[3],
-            
-            'kp_vel_xy': action[4],
-            'kd_vel_xy': action[5],
-
-            'kp_z': action[6],
-            'ki_z': action[7],
-            'kd_z': action[8]
-        }

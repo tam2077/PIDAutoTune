@@ -1,0 +1,140 @@
+\doxysection{Train\+\_\+\+SAC Namespace Reference}
+\hypertarget{namespace_train___s_a_c}{}\label{namespace_train___s_a_c}\index{Train\_SAC@{Train\_SAC}}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{namespace_train___s_a_c_af9b389b86960e57a3a06764b7ab2928b}{model\+\_\+path}} = os.\+path.\+join(\textquotesingle{}Training\textquotesingle{}, \textquotesingle{}Saved Models\textquotesingle{}, \textquotesingle{}SAC\+\_\+model\textquotesingle{})
+\item 
+\mbox{\hyperlink{namespace_train___s_a_c_aadf27fcd34930e43cb0d9b809d547429}{log\+\_\+path}} = os.\+path.\+join(\textquotesingle{}Training\textquotesingle{}, \textquotesingle{}Logs\textquotesingle{})
+\item 
+\mbox{\hyperlink{namespace_train___s_a_c_aca80b943b5d2c7da8323db4b02ad05e0}{env}} = \mbox{\hyperlink{classdrone_robot_1_1_drone_robot}{Drone\+Robot}}()
+\item 
+\mbox{\hyperlink{namespace_train___s_a_c_ab5adbc213163bfd9b8f1f8298f9fe06d}{target\+\_\+location}}
+\item 
+\mbox{\hyperlink{namespace_train___s_a_c_a2b318d3b628fe3cd919556d5f480c680}{debug\+Mode}}
+\item 
+int \mbox{\hyperlink{namespace_train___s_a_c_a67b3180e948cc54e3bf3414591de5f00}{episodes}} = 1000
+\item 
+int \mbox{\hyperlink{namespace_train___s_a_c_ae35f22069b2daf0c028e2f25303fb035}{timesteps}} = env.\+steps\+\_\+per\+\_\+episode \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{namespace_train___s_a_c_a67b3180e948cc54e3bf3414591de5f00}{episodes}}
+\item 
+\mbox{\hyperlink{namespace_train___s_a_c_ac768484035337922f9c9ae7885d63056}{model}} = SAC("{}Mlp\+Policy"{}, \mbox{\hyperlink{namespace_train___s_a_c_aca80b943b5d2c7da8323db4b02ad05e0}{env}}, verbose=1, device=\textquotesingle{}cuda\textquotesingle{}, tensorboard\+\_\+log=\mbox{\hyperlink{namespace_train___s_a_c_aadf27fcd34930e43cb0d9b809d547429}{log\+\_\+path}})
+\item 
+\mbox{\hyperlink{namespace_train___s_a_c_ae3cb774124f54e55b6f76bad2e2f183b}{total\+\_\+timesteps}}
+\item 
+\mbox{\hyperlink{namespace_train___s_a_c_a36b609dd426a0d3d925231afc6ecac1a}{log\+\_\+interval}}
+\item 
+\mbox{\hyperlink{namespace_train___s_a_c_a2c0d1edb9f1cfbf335f3313251acc148}{path}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Variable Documentation}
+\Hypertarget{namespace_train___s_a_c_a2b318d3b628fe3cd919556d5f480c680}\index{Train\_SAC@{Train\_SAC}!debugMode@{debugMode}}
+\index{debugMode@{debugMode}!Train\_SAC@{Train\_SAC}}
+\doxysubsubsection{\texorpdfstring{debugMode}{debugMode}}
+{\footnotesize\ttfamily \label{namespace_train___s_a_c_a2b318d3b628fe3cd919556d5f480c680} 
+Train\+\_\+\+SAC.\+debug\+Mode}
+
+
+
+Definition at line \mbox{\hyperlink{_train___s_a_c_8py_source_l00014}{14}} of file \mbox{\hyperlink{_train___s_a_c_8py_source}{Train\+\_\+\+SAC.\+py}}.
+
+\Hypertarget{namespace_train___s_a_c_aca80b943b5d2c7da8323db4b02ad05e0}\index{Train\_SAC@{Train\_SAC}!env@{env}}
+\index{env@{env}!Train\_SAC@{Train\_SAC}}
+\doxysubsubsection{\texorpdfstring{env}{env}}
+{\footnotesize\ttfamily \label{namespace_train___s_a_c_aca80b943b5d2c7da8323db4b02ad05e0} 
+Train\+\_\+\+SAC.\+env = \mbox{\hyperlink{classdrone_robot_1_1_drone_robot}{Drone\+Robot}}()}
+
+
+
+Definition at line \mbox{\hyperlink{_train___s_a_c_8py_source_l00012}{12}} of file \mbox{\hyperlink{_train___s_a_c_8py_source}{Train\+\_\+\+SAC.\+py}}.
+
+\Hypertarget{namespace_train___s_a_c_a67b3180e948cc54e3bf3414591de5f00}\index{Train\_SAC@{Train\_SAC}!episodes@{episodes}}
+\index{episodes@{episodes}!Train\_SAC@{Train\_SAC}}
+\doxysubsubsection{\texorpdfstring{episodes}{episodes}}
+{\footnotesize\ttfamily \label{namespace_train___s_a_c_a67b3180e948cc54e3bf3414591de5f00} 
+int Train\+\_\+\+SAC.\+episodes = 1000}
+
+
+
+Definition at line \mbox{\hyperlink{_train___s_a_c_8py_source_l00016}{16}} of file \mbox{\hyperlink{_train___s_a_c_8py_source}{Train\+\_\+\+SAC.\+py}}.
+
+\Hypertarget{namespace_train___s_a_c_a36b609dd426a0d3d925231afc6ecac1a}\index{Train\_SAC@{Train\_SAC}!log\_interval@{log\_interval}}
+\index{log\_interval@{log\_interval}!Train\_SAC@{Train\_SAC}}
+\doxysubsubsection{\texorpdfstring{log\_interval}{log\_interval}}
+{\footnotesize\ttfamily \label{namespace_train___s_a_c_a36b609dd426a0d3d925231afc6ecac1a} 
+Train\+\_\+\+SAC.\+log\+\_\+interval}
+
+
+
+Definition at line \mbox{\hyperlink{_train___s_a_c_8py_source_l00030}{30}} of file \mbox{\hyperlink{_train___s_a_c_8py_source}{Train\+\_\+\+SAC.\+py}}.
+
+\Hypertarget{namespace_train___s_a_c_aadf27fcd34930e43cb0d9b809d547429}\index{Train\_SAC@{Train\_SAC}!log\_path@{log\_path}}
+\index{log\_path@{log\_path}!Train\_SAC@{Train\_SAC}}
+\doxysubsubsection{\texorpdfstring{log\_path}{log\_path}}
+{\footnotesize\ttfamily \label{namespace_train___s_a_c_aadf27fcd34930e43cb0d9b809d547429} 
+Train\+\_\+\+SAC.\+log\+\_\+path = os.\+path.\+join(\textquotesingle{}Training\textquotesingle{}, \textquotesingle{}Logs\textquotesingle{})}
+
+
+
+Definition at line \mbox{\hyperlink{_train___s_a_c_8py_source_l00009}{9}} of file \mbox{\hyperlink{_train___s_a_c_8py_source}{Train\+\_\+\+SAC.\+py}}.
+
+\Hypertarget{namespace_train___s_a_c_ac768484035337922f9c9ae7885d63056}\index{Train\_SAC@{Train\_SAC}!model@{model}}
+\index{model@{model}!Train\_SAC@{Train\_SAC}}
+\doxysubsubsection{\texorpdfstring{model}{model}}
+{\footnotesize\ttfamily \label{namespace_train___s_a_c_ac768484035337922f9c9ae7885d63056} 
+Train\+\_\+\+SAC.\+model = SAC("{}Mlp\+Policy"{}, \mbox{\hyperlink{namespace_train___s_a_c_aca80b943b5d2c7da8323db4b02ad05e0}{env}}, verbose=1, device=\textquotesingle{}cuda\textquotesingle{}, tensorboard\+\_\+log=\mbox{\hyperlink{namespace_train___s_a_c_aadf27fcd34930e43cb0d9b809d547429}{log\+\_\+path}})}
+
+
+
+Definition at line \mbox{\hyperlink{_train___s_a_c_8py_source_l00023}{23}} of file \mbox{\hyperlink{_train___s_a_c_8py_source}{Train\+\_\+\+SAC.\+py}}.
+
+\Hypertarget{namespace_train___s_a_c_af9b389b86960e57a3a06764b7ab2928b}\index{Train\_SAC@{Train\_SAC}!model\_path@{model\_path}}
+\index{model\_path@{model\_path}!Train\_SAC@{Train\_SAC}}
+\doxysubsubsection{\texorpdfstring{model\_path}{model\_path}}
+{\footnotesize\ttfamily \label{namespace_train___s_a_c_af9b389b86960e57a3a06764b7ab2928b} 
+Train\+\_\+\+SAC.\+model\+\_\+path = os.\+path.\+join(\textquotesingle{}Training\textquotesingle{}, \textquotesingle{}Saved Models\textquotesingle{}, \textquotesingle{}SAC\+\_\+model\textquotesingle{})}
+
+
+
+Definition at line \mbox{\hyperlink{_train___s_a_c_8py_source_l00008}{8}} of file \mbox{\hyperlink{_train___s_a_c_8py_source}{Train\+\_\+\+SAC.\+py}}.
+
+\Hypertarget{namespace_train___s_a_c_a2c0d1edb9f1cfbf335f3313251acc148}\index{Train\_SAC@{Train\_SAC}!path@{path}}
+\index{path@{path}!Train\_SAC@{Train\_SAC}}
+\doxysubsubsection{\texorpdfstring{path}{path}}
+{\footnotesize\ttfamily \label{namespace_train___s_a_c_a2c0d1edb9f1cfbf335f3313251acc148} 
+Train\+\_\+\+SAC.\+path}
+
+
+
+Definition at line \mbox{\hyperlink{_train___s_a_c_8py_source_l00035}{35}} of file \mbox{\hyperlink{_train___s_a_c_8py_source}{Train\+\_\+\+SAC.\+py}}.
+
+\Hypertarget{namespace_train___s_a_c_ab5adbc213163bfd9b8f1f8298f9fe06d}\index{Train\_SAC@{Train\_SAC}!target\_location@{target\_location}}
+\index{target\_location@{target\_location}!Train\_SAC@{Train\_SAC}}
+\doxysubsubsection{\texorpdfstring{target\_location}{target\_location}}
+{\footnotesize\ttfamily \label{namespace_train___s_a_c_ab5adbc213163bfd9b8f1f8298f9fe06d} 
+Train\+\_\+\+SAC.\+target\+\_\+location}
+
+
+
+Definition at line \mbox{\hyperlink{_train___s_a_c_8py_source_l00013}{13}} of file \mbox{\hyperlink{_train___s_a_c_8py_source}{Train\+\_\+\+SAC.\+py}}.
+
+\Hypertarget{namespace_train___s_a_c_ae35f22069b2daf0c028e2f25303fb035}\index{Train\_SAC@{Train\_SAC}!timesteps@{timesteps}}
+\index{timesteps@{timesteps}!Train\_SAC@{Train\_SAC}}
+\doxysubsubsection{\texorpdfstring{timesteps}{timesteps}}
+{\footnotesize\ttfamily \label{namespace_train___s_a_c_ae35f22069b2daf0c028e2f25303fb035} 
+Train\+\_\+\+SAC.\+timesteps = env.\+steps\+\_\+per\+\_\+episode \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{namespace_train___s_a_c_a67b3180e948cc54e3bf3414591de5f00}{episodes}}}
+
+
+
+Definition at line \mbox{\hyperlink{_train___s_a_c_8py_source_l00017}{17}} of file \mbox{\hyperlink{_train___s_a_c_8py_source}{Train\+\_\+\+SAC.\+py}}.
+
+\Hypertarget{namespace_train___s_a_c_ae3cb774124f54e55b6f76bad2e2f183b}\index{Train\_SAC@{Train\_SAC}!total\_timesteps@{total\_timesteps}}
+\index{total\_timesteps@{total\_timesteps}!Train\_SAC@{Train\_SAC}}
+\doxysubsubsection{\texorpdfstring{total\_timesteps}{total\_timesteps}}
+{\footnotesize\ttfamily \label{namespace_train___s_a_c_ae3cb774124f54e55b6f76bad2e2f183b} 
+Train\+\_\+\+SAC.\+total\+\_\+timesteps}
+
+
+
+Definition at line \mbox{\hyperlink{_train___s_a_c_8py_source_l00030}{30}} of file \mbox{\hyperlink{_train___s_a_c_8py_source}{Train\+\_\+\+SAC.\+py}}.
+
