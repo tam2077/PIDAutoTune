@@ -1,0 +1,55 @@
+.TH "controllers/Train_SAC.py" 3 "droneProject" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+controllers/Train_SAC.py
+.SH SYNOPSIS
+.br
+.PP
+.SS "Namespaces"
+
+.in +1c
+.ti -1c
+.RI "namespace \fBTrain_SAC\fP"
+.br
+.in -1c
+.SS "Variables"
+
+.in +1c
+.ti -1c
+.RI "\fBTrain_SAC\&.model_path\fP = os\&.path\&.join('Training', 'Saved Models', 'SAC_model')"
+.br
+.ti -1c
+.RI "\fBTrain_SAC\&.log_path\fP = os\&.path\&.join('Training', 'Logs')"
+.br
+.ti -1c
+.RI "\fBTrain_SAC\&.env\fP = \fBDroneRobot\fP()"
+.br
+.ti -1c
+.RI "\fBTrain_SAC\&.target_location\fP"
+.br
+.ti -1c
+.RI "\fBTrain_SAC\&.debugMode\fP"
+.br
+.ti -1c
+.RI "int \fBTrain_SAC\&.episodes\fP = 1000"
+.br
+.ti -1c
+.RI "int \fBTrain_SAC\&.timesteps\fP = env\&.steps_per_episode * \fBepisodes\fP"
+.br
+.ti -1c
+.RI "\fBTrain_SAC\&.model\fP = SAC('MlpPolicy', \fBenv\fP, verbose=1, device='cuda', tensorboard_log=\fBlog_path\fP)"
+.br
+.ti -1c
+.RI "\fBTrain_SAC\&.total_timesteps\fP"
+.br
+.ti -1c
+.RI "\fBTrain_SAC\&.log_interval\fP"
+.br
+.ti -1c
+.RI "\fBTrain_SAC\&.path\fP"
+.br
+.in -1c
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for droneProject from the source code\&.

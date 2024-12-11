@@ -1,0 +1,708 @@
+.TH "droneRobot.DroneRobot" 3 "droneProject" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+droneRobot.DroneRobot
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherits RobotSupervisorEnv\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fB__init__\fP (self)"
+.br
+.ti -1c
+.RI "\fBupdate_motor_power\fP (self, current_location)"
+.br
+.ti -1c
+.RI "\fBaxis_angle_to_euler\fP (self, axis_angle)"
+.br
+.ti -1c
+.RI "\fBget_observations\fP (self)"
+.br
+.ti -1c
+.RI "\fBget_default_observation\fP (self)"
+.br
+.ti -1c
+.RI "\fBget_reward\fP (self, action=None)"
+.br
+.ti -1c
+.RI "\fBis_done\fP (self)"
+.br
+.ti -1c
+.RI "\fBsolved\fP (self)"
+.br
+.ti -1c
+.RI "\fBget_info\fP (self)"
+.br
+.ti -1c
+.RI "\fBlaunchTensorBoard\fP (self, log_path)"
+.br
+.ti -1c
+.RI "\fBstartTensorBoard\fP (self, log_path)"
+.br
+.ti -1c
+.RI "\fBrender\fP (self, mode='human')"
+.br
+.ti -1c
+.RI "\fBstep\fP (self, action)"
+.br
+.ti -1c
+.RI "\fBreset\fP (self)"
+.br
+.RI "Guess what, another override function\&. "
+.ti -1c
+.RI "\fBapply_action\fP (self, action)"
+.br
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "bool \fBdebugMode\fP = False"
+.br
+.ti -1c
+.RI "int \fBrandomSeed\fP = 42"
+.br
+.ti -1c
+.RI "bool \fBsaveOK\fP = False"
+.br
+.ti -1c
+.RI "int \fBlocation_bound\fP = 5"
+.br
+.ti -1c
+.RI "int \fBangle_bound\fP = 90"
+.br
+.ti -1c
+.RI "int \fBmax_velocity\fP = 150"
+.br
+.ti -1c
+.RI "int \fBavg_target_score\fP = \-20"
+.br
+.ti -1c
+.RI "int \fBprevious_velocity\fP = 0"
+.br
+.ti -1c
+.RI "list \fBtarget_location\fP = [0,0,2]"
+.br
+.ti -1c
+.RI "dict \fBpast_errors\fP = {'x': 0, 'y': 0, 'z': 0}"
+.br
+.ti -1c
+.RI "dict \fBintegral_errors\fP = {'x': 0, 'y': 0, 'z': 0}"
+.br
+.ti -1c
+.RI "int \fBpast_yaw_error\fP = 0"
+.br
+.ti -1c
+.RI "int \fBlast_ep_score\fP = 0"
+.br
+.ti -1c
+.RI "bool \fBdidOnce\fP = False"
+.br
+.ti -1c
+.RI "int \fBactionCount\fP = 0"
+.br
+.ti -1c
+.RI "\fBtimestep\fP = self\&.getBasicTimeStep()"
+.br
+.ti -1c
+.RI "int \fBdt\fP = 1/200"
+.br
+.ti -1c
+.RI "int \fBcur_step_count\fP = 0"
+.br
+.ti -1c
+.RI "int \fBsteps_per_episode\fP = 3000"
+.br
+.ti -1c
+.RI "int \fBepisode_score\fP = 0"
+.br
+.ti -1c
+.RI "list \fBepisode_score_list\fP = []"
+.br
+.ti -1c
+.RI "int \fByaw_gain\fP = 0"
+.br
+.ti -1c
+.RI "dict \fBpid_gains\fP"
+.br
+.ti -1c
+.RI "dict \fBmotor_power\fP"
+.br
+.ti -1c
+.RI "\fBobservation_space\fP"
+.br
+.ti -1c
+.RI "\fBaction_space\fP"
+.br
+.ti -1c
+.RI "\fBrobot\fP = self\&.getSelf()"
+.br
+.ti -1c
+.RI "bool \fBstepFlag\fP = True"
+.br
+.ti -1c
+.RI "\fBm1_motor\fP = self\&.getDevice('m1_motor')"
+.br
+.RI "Needs to be defined in step to work properly\&. "
+.ti -1c
+.RI "\fBm2_motor\fP = self\&.getDevice('m2_motor')"
+.br
+.ti -1c
+.RI "\fBm3_motor\fP = self\&.getDevice('m3_motor')"
+.br
+.ti -1c
+.RI "\fBm4_motor\fP = self\&.getDevice('m4_motor')"
+.br
+.ti -1c
+.RI "\fBimu\fP = self\&.getDevice('inertial_unit')"
+.br
+.ti -1c
+.RI "\fBgps\fP = self\&.getDevice('gps')"
+.br
+.ti -1c
+.RI "\fBgyro\fP = self\&.getDevice('gyro')"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line \fB28\fP of file \fBdroneRobot\&.py\fP\&.
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "droneRobot\&.DroneRobot\&.__init__ ( self)"
+
+.PP
+.nf
+@brief Initializes the DroneRobot environment and sets default parameters\&.
+
+This constructor initializes the simulation environment, sets up the observation and action spaces,
+and defines key parameters such as PID gains, motor power, and episode configurations\&.
+Additionally, it configures the random seed for reproducibility and sets up the simulation timestep\&.
+
+@details
+- Initializes debug mode, random seed, and task status\&.
+- Configures observation and action spaces using Gym's `Box`\&.
+- Sets up PID gains with random initial values and motor power to zero\&.
+- Defines simulation parameters such as timestep and maximum steps per episode\&.
+- Maintains error tracking for the PID controller\&.
+
+@note The method assumes that the superclass `RobotSupervisorEnv` is correctly implemented\&.
+
+.fi
+.PP
+ 
+.PP
+Definition at line \fB30\fP of file \fBdroneRobot\&.py\fP\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "droneRobot\&.DroneRobot\&.apply_action ( self,  action)"
+
+.PP
+.nf
+     @brief Applies the specified action to the drone by updating PID controller gains\&.
+    
+     This method sets the PID gains based on the provided action\&. If debug mode is active,
+     the action is ignored, and default PID gains are used instead\&.
+    
+     @param action A list or array containing PID gain values for X, Y, and Z axes in the order:
+                   [X_P, X_I, X_D, Y_P, Y_I, Y_D, Z_P, Z_I, Z_D]\&.
+    
+     @details
+     - In debug mode, fixed PID gains are applied, and the action parameter is ignored\&.
+     - Outside debug mode, the PID gains are updated directly from the action input\&.
+     - Resets the last episode score to zero after applying the action\&.
+    
+     @note Ensure that the action parameter contains exactly 9 elements representing the PID gains\&.
+.fi
+.PP
+ 
+.PP
+Definition at line \fB671\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.axis_angle_to_euler ( self,  axis_angle)"
+
+.PP
+.nf
+     @brief Converts an axis-angle representation to Euler angles in degrees\&.
+    
+     This method takes a 4D vector representing an axis-angle (x, y, z, angle)
+     and converts it to the corresponding Euler angles (roll, pitch, yaw) in degrees\&.
+    
+     @param axis_angle A list or tuple containing the axis components (x, y, z) and the rotation angle\&.
+     @return A tuple (roll, pitch, yaw) representing the Euler angles in degrees\&.
+    
+     @details
+     - Normalizes the axis vector if its magnitude is non-zero\&.
+     - Converts the axis-angle to a quaternion and then to Euler angles\&.
+     - Handles edge cases to ensure angles are properly constrained\&.
+    
+     @note The input angle is expected in radians\&.
+.fi
+.PP
+ 
+.PP
+Definition at line \fB234\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.get_default_observation ( self)"
+
+.PP
+.nf
+     @brief Provides a default observation vector\&.
+    
+     This method returns a default observation consisting of zero values, which matches the shape
+     of the observation space\&.
+    
+     @return A list of zeros with a length equal to the number of dimensions in the observation space\&.
+    
+     @details
+     - The default observation is used as a placeholder or initialization value when no meaningful
+       observation data is available\&.
+.fi
+.PP
+ 
+.PP
+Definition at line \fB323\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.get_info ( self)"
+
+.PP
+.nf
+     @brief Provides additional information about the environment\&.
+    
+     This method returns a dictionary containing environment-specific details\&.
+    
+     @return A dictionary with key-value pairs representing additional environment information\&.
+    
+     @details
+     - Currently, this method returns a placeholder dictionary `{'Dummy': 'dummy'}`\&.
+     - Can be extended to include meaningful diagnostic or metadata information\&.
+.fi
+.PP
+ 
+.PP
+Definition at line \fB488\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.get_observations ( self)"
+
+.PP
+.nf
+     @brief Retrieves the current state of the drone as observations\&.
+    
+     This method gathers the drone's current position, orientation, and velocity, and combines them
+     into a single observation vector\&.
+    
+     @return A numpy array containing the concatenated observations: 
+             [position (x, y, z), rotation (roll, pitch, yaw), velocity (linear and angular)]\&.
+    
+     @details
+     - The position is obtained from the `translation` field of the robot\&.
+     - The rotation is converted from axis-angle representation to Euler angles using `axis_angle_to_euler`\&.
+     - The velocity includes both linear and angular components\&.
+    
+     @note Assumes that the Webots simulation provides the required fields and velocity information\&.
+     @see axis_angle_to_euler
+.fi
+.PP
+ 
+.PP
+Definition at line \fB290\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.get_reward ( self,  action = \fRNone\fP)"
+
+.PP
+.nf
+     @brief Computes the reward based on the drone's current state and actions\&.
+    
+     This method evaluates the drone's performance in the environment by calculating a composite reward
+     that combines various factors such as distance to the target, stability, efficiency, and task completion\&.
+    
+     @param action (Optional) The action taken by the drone, though not directly used in the current implementation\&.
+     @return A float value representing the computed reward for the current timestep\&.
+    
+     @details
+     - **Distance to Target:** A quadratic penalty based on the squared distance to the target location\&.
+     - **Stability Reward:** Penalizes abrupt changes in velocity\&.
+     - **Efficiency Reward:** Adds a small time penalty to encourage faster task completion\&.
+     - **Stay Penalty:** Penalizes the drone for staying near the origin after a certain number of steps\&.
+     - **Direction Reward:** Rewards the drone for moving in the direction of the target\&.
+     - **Goal Bonus:** Provides a significant reward for reaching the target location\&.
+     - **Time Penalty:** Encourages efficiency by applying a small penalty for each timestep\&.
+    
+     @note This function assumes observations include position and velocity as described in `get_observations`\&.
+.fi
+.PP
+ 
+.PP
+Definition at line \fB342\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.is_done ( self)"
+
+.PP
+.nf
+     @brief Checks whether the current episode is complete\&.
+    
+     This method evaluates conditions to determine if the episode should terminate, such as exceeding
+     step limits, going out of bounds, or exceeding angular constraints\&.
+    
+     @return `True` if the episode is complete, `False` otherwise\&.
+    
+     @details
+     - **Step Count Trigger:** The episode ends if the current step count exceeds the maximum allowed steps\&.
+     - **Location Bound Trigger:** The episode terminates if the drone's position deviates beyond a predefined
+       bound from the target location on any axis\&.
+     - **Angle Bound Trigger:** The episode terminates if any rotational angle (roll, pitch, yaw) exceeds
+       the specified angular limit\&.
+    
+     @note Observations are fetched from `get_observations`, and positional and angular bounds are defined
+           within the function\&.
+.fi
+.PP
+ 
+.PP
+Definition at line \fB411\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.launchTensorBoard ( self,  log_path)"
+
+.PP
+.nf
+     @brief Launches TensorBoard for monitoring training progress\&.
+    
+     This method runs a system command to start TensorBoard using the specified log directory\&.
+    
+     @param log_path The path to the directory containing TensorBoard log files\&.
+    
+     @details
+     - Executes the command `tensorboard --logdir=<log_path>` to launch TensorBoard\&.
+     - Requires TensorBoard to be installed and accessible from the system's command line\&.
+    
+     @note Ensure the specified `log_path` is valid and contains log files for visualization\&.
+.fi
+.PP
+ 
+.PP
+Definition at line \fB505\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.render ( self,  mode = \fR'human'\fP)"
+
+.PP
+.nf
+     @brief Renders the environment\&.
+    
+     This method is a placeholder for rendering the environment in various modes\&.
+    
+     @param mode The rendering mode (default is `'human'`)\&.
+    
+     @details
+     - Currently, this method is not implemented\&.
+     - Can be extended to provide visualizations or other forms of rendering\&.
+.fi
+.PP
+ 
+.PP
+Definition at line \fB543\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.reset ( self)"
+
+.PP
+Guess what, another override function\&. Only change is to add and reset a flag
+
+.PP
+.PP
+.nf
+     @brief Resets the environment to its initial state\&.
+    
+     This method restores the simulation to its default configuration by resetting motor power,
+     step counters, error terms, and the Webots simulation state\&.
+    
+     @return A default observation, represented as a zero-filled numpy array matching the observation space shape\&.
+    
+     @details
+     - Resets motor power values to zero and clears PID error terms\&.
+     - Resets the Webots simulation state and physics using `simulationReset` and `simulationResetPhysics`\&.
+     - Ensures compatibility with Webots versions >R2020b but can be overridden for earlier versions\&.
+     - Calls `super()\&.step` to integrate the reset state into the simulation timestep\&.
+    
+     @note This method is backward-compatible, allowing older supervisor implementations to be migrated\&..fi
+.PP
+ 
+.PP
+Definition at line \fB634\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.solved ( self)"
+
+.PP
+.nf
+     @brief Determines if the task is considered 'solved\&.'
+    
+     The task is deemed solved if the mean score of the last 100 episodes exceeds
+     a predefined threshold (`avg_target_score`), indicating consistent performance\&.
+    
+     @return `True` if the task is solved, `False` otherwise\&.
+    
+     @details
+     - **Threshold Check:** The task is solved if the mean score of the last 100 episodes is greater than `avg_target_score`\&.
+     - If the condition is met, the `saveOK` flag is set to `True`\&.
+    
+     @note Requires the `episode_score_list` to contain at least 100 episodes\&.
+.fi
+.PP
+ 
+.PP
+Definition at line \fB463\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.startTensorBoard ( self,  log_path)"
+
+.PP
+.nf
+     @brief Starts TensorBoard in a separate thread\&.
+    
+     This method creates and starts a new thread to run TensorBoard, ensuring that it does not block the main process\&.
+    
+     @param log_path The path to the directory containing TensorBoard log files\&.
+    
+     @details
+     - Internally calls `launchTensorBoard` in a separate thread\&.
+     - Useful for starting TensorBoard asynchronously during training or simulation\&.
+    
+     @note Ensure the `log_path` is valid and TensorBoard is installed\&.
+.fi
+.PP
+ 
+.PP
+Definition at line \fB523\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.step ( self,  action)"
+
+.PP
+.nf
+@brief Executes a single simulation step, applying an action and updating the environment\&.
+
+This method steps the controller, applies the given action to the robot, and returns the resulting
+state of the environment, including observations, reward, termination status, and additional info\&.
+
+@param action The action to be applied to the robot, defined by the use case (e\&.g\&., integer for discrete actions)\&.
+@return A tuple `(observations, reward, done, info)`:
+      - `observations`: Current state of the environment\&.
+      - `reward`: Reward received for the action taken\&.
+      - `done`: Boolean indicating whether the episode is complete\&.
+      - `info`: Additional diagnostic information\&.
+
+@details
+- Increments the step count and initializes motor devices if not already done\&.
+- Applies the action using `apply_action` and updates motor power with `update_motor_power`\&.
+- Fetches observations, computes the reward, and checks if the episode is done\&.
+- Handles integration with the Webots supervisor timestep\&.
+
+@note Assumes valid initialization of motors and sensors (e\&.g\&., GPS, IMU, gyro)\&.
+.fi
+.PP
+ 
+.PP
+Definition at line \fB560\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.update_motor_power ( self,  current_location)"
+
+.PP
+.nf
+     @brief Updates the motor power for the drone based on the PID controller and the current location\&.
+    
+     This method calculates the error between the drone's current location and the target location for
+     each axis (x, y, z) and adjusts the motor power accordingly using PID control\&. It also applies yaw
+     control to align the drone towards the target direction\&. For testing purposes, yaw gain can be set to 
+     zero\&.
+    
+     @param current_location A list containing the drone's current position (x, y, z) and yaw angle\&.
+    
+     @details
+     - Computes proportional (P), integral (I), and derivative (D) terms for PID control on each axis\&.
+     - Normalizes yaw angle errors to the range [-π, π]\&.
+     - Updates motor power values for maintaining stability and reaching the target location\&.
+     - Clips motor power values to ensure they remain within the allowed range\&.
+    
+     @note Assumes the `current_location` input includes yaw as the third element\&.
+     @see self\&.pid_gains, self\&.motor_power
+.fi
+.PP
+ 
+.PP
+Definition at line \fB133\fP of file \fBdroneRobot\&.py\fP\&.
+.SH "Member Data Documentation"
+.PP 
+.SS "droneRobot\&.DroneRobot\&.action_space"
+\fBInitial value:\fP
+.nf
+=  Box(low=np\&.array([0,0,0,0,0,0,0,0,0]),
+                                high=np\&.array([100,100,100,100,100,100,100,100,100]),
+                                dtype=np\&.float16)
+.PP
+.fi
+
+.PP
+Definition at line \fB125\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "int droneRobot\&.DroneRobot\&.actionCount = 0"
+
+.PP
+Definition at line \fB68\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.angle_bound = 90"
+
+.PP
+Definition at line \fB52\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "int droneRobot\&.DroneRobot\&.avg_target_score = \-20"
+
+.PP
+Definition at line \fB55\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "int droneRobot\&.DroneRobot\&.cur_step_count = 0"
+
+.PP
+Definition at line \fB73\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "bool droneRobot\&.DroneRobot\&.debugMode = False"
+
+.PP
+Definition at line \fB47\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "bool droneRobot\&.DroneRobot\&.didOnce = False"
+
+.PP
+Definition at line \fB67\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "int droneRobot\&.DroneRobot\&.dt = 1/200"
+
+.PP
+Definition at line \fB72\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "int droneRobot\&.DroneRobot\&.episode_score = 0"
+
+.PP
+Definition at line \fB75\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.episode_score_list = []"
+
+.PP
+Definition at line \fB76\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.gps = self\&.getDevice('gps')"
+
+.PP
+Definition at line \fB600\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.gyro = self\&.getDevice('gyro')"
+
+.PP
+Definition at line \fB603\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.imu = self\&.getDevice('inertial_unit')"
+
+.PP
+Definition at line \fB597\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "dict droneRobot\&.DroneRobot\&.integral_errors = {'x': 0, 'y': 0, 'z': 0}"
+
+.PP
+Definition at line \fB62\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "int droneRobot\&.DroneRobot\&.last_ep_score = 0"
+
+.PP
+Definition at line \fB65\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.location_bound = 5"
+
+.PP
+Definition at line \fB51\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.m1_motor = self\&.getDevice('m1_motor')"
+
+.PP
+Needs to be defined in step to work properly\&. 
+.PP
+Definition at line \fB585\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.m2_motor = self\&.getDevice('m2_motor')"
+
+.PP
+Definition at line \fB588\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.m3_motor = self\&.getDevice('m3_motor')"
+
+.PP
+Definition at line \fB591\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.m4_motor = self\&.getDevice('m4_motor')"
+
+.PP
+Definition at line \fB594\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "int droneRobot\&.DroneRobot\&.max_velocity = 150"
+
+.PP
+Definition at line \fB53\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "dict droneRobot\&.DroneRobot\&.motor_power"
+\fBInitial value:\fP
+.nf
+=  {
+            'm1': 0,
+            'm2': 0,
+            'm3': 0,
+            'm4': 0
+        }
+.PP
+.fi
+
+.PP
+Definition at line \fB93\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.observation_space"
+\fBInitial value:\fP
+.nf
+=  Box(low=np\&.array([\-np\&.inf,\-np\&.inf,\-np\&.inf,\-np\&.inf,\-np\&.inf,\-np\&.inf,\-np\&.inf,\-np\&.inf,\-np\&.inf,\-np\&.inf,\-np\&.inf,\-np\&.inf]),
+                                     high=np\&.array([np\&.inf,np\&.inf,np\&.inf,np\&.inf,np\&.inf,np\&.inf,np\&.inf,np\&.inf,np\&.inf,np\&.inf,np\&.inf,np\&.inf]),
+                                     dtype=np\&.float64)
+.PP
+.fi
+
+.PP
+Definition at line \fB120\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "dict droneRobot\&.DroneRobot\&.past_errors = {'x': 0, 'y': 0, 'z': 0}"
+
+.PP
+Definition at line \fB61\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "int droneRobot\&.DroneRobot\&.past_yaw_error = 0"
+
+.PP
+Definition at line \fB63\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "dict droneRobot\&.DroneRobot\&.pid_gains"
+\fBInitial value:\fP
+.nf
+=  {
+            'X_P': random\&.uniform(0,100),
+            'X_I': random\&.uniform(0,100),
+            'X_D': random\&.uniform(0,100),
+            
+            'Y_P': random\&.uniform(0,100),
+            'Y_I': random\&.uniform(0,100),
+            'Y_D': random\&.uniform(0,100),
+            
+            'Z_P': random\&.uniform(0,100),
+            'Z_I': random\&.uniform(0,100),
+            'Z_D': random\&.uniform(0,100),
+        }
+.PP
+.fi
+
+.PP
+Definition at line \fB80\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "int droneRobot\&.DroneRobot\&.previous_velocity = 0"
+
+.PP
+Definition at line \fB56\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.randomSeed = 42"
+
+.PP
+Definition at line \fB48\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.robot = self\&.getSelf()"
+
+.PP
+Definition at line \fB130\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "bool droneRobot\&.DroneRobot\&.saveOK = False"
+
+.PP
+Definition at line \fB50\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "bool droneRobot\&.DroneRobot\&.stepFlag = True"
+
+.PP
+Definition at line \fB437\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "int droneRobot\&.DroneRobot\&.steps_per_episode = 3000"
+
+.PP
+Definition at line \fB74\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "list droneRobot\&.DroneRobot\&.target_location = [0,0,2]"
+
+.PP
+Definition at line \fB58\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "droneRobot\&.DroneRobot\&.timestep = self\&.getBasicTimeStep()"
+
+.PP
+Definition at line \fB70\fP of file \fBdroneRobot\&.py\fP\&.
+.SS "int droneRobot\&.DroneRobot\&.yaw_gain = 0"
+
+.PP
+Definition at line \fB78\fP of file \fBdroneRobot\&.py\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for droneProject from the source code\&.

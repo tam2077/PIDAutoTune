@@ -1,0 +1,61 @@
+.TH "controllers/Train_TDP.py" 3 "droneProject" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+controllers/Train_TDP.py
+.SH SYNOPSIS
+.br
+.PP
+.SS "Namespaces"
+
+.in +1c
+.ti -1c
+.RI "namespace \fBTrain_TDP\fP"
+.br
+.in -1c
+.SS "Variables"
+
+.in +1c
+.ti -1c
+.RI "\fBTrain_TDP\&.model_path\fP = os\&.path\&.join('Training', 'Saved Models', f'td3_drone_model{datetime\&.datetime\&.now()\&.strftime('%Y_%m_%d_%H_%M_%S')}')"
+.br
+.ti -1c
+.RI "\fBTrain_TDP\&.log_path\fP = os\&.path\&.join('Training', 'Logs', 'td3_drone_logs')"
+.br
+.ti -1c
+.RI "\fBTrain_TDP\&.env\fP = \fBDroneRobot\fP()"
+.br
+.ti -1c
+.RI "\fBTrain_TDP\&.target_location\fP"
+.br
+.ti -1c
+.RI "\fBTrain_TDP\&.debugMode\fP"
+.br
+.ti -1c
+.RI "\fBTrain_TDP\&.n_actions\fP = env\&.action_space\&.shape[\-1]"
+.br
+.ti -1c
+.RI "\fBTrain_TDP\&.action_noise\fP = OrnsteinUhlenbeckActionNoise(mean=np\&.zeros(\fBn_actions\fP), sigma=float(0\&.1) * np\&.ones(\fBn_actions\fP))"
+.br
+.ti -1c
+.RI "int \fBTrain_TDP\&.episodes\fP = 1000"
+.br
+.ti -1c
+.RI "int \fBTrain_TDP\&.timesteps\fP = env\&.steps_per_episode * \fBepisodes\fP"
+.br
+.ti -1c
+.RI "\fBTrain_TDP\&.model\fP = TD3('MlpPolicy', \fBenv\fP, \fBaction_noise\fP=\fBaction_noise\fP, verbose=1, device='cuda', tensorboard_log=\fBlog_path\fP)"
+.br
+.ti -1c
+.RI "\fBTrain_TDP\&.total_timesteps\fP"
+.br
+.ti -1c
+.RI "\fBTrain_TDP\&.log_interval\fP"
+.br
+.ti -1c
+.RI "\fBTrain_TDP\&.path\fP"
+.br
+.in -1c
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for droneProject from the source code\&.

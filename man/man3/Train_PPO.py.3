@@ -1,0 +1,46 @@
+.TH "controllers/Train_PPO.py" 3 "droneProject" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+controllers/Train_PPO.py
+.SH SYNOPSIS
+.br
+.PP
+.SS "Namespaces"
+
+.in +1c
+.ti -1c
+.RI "namespace \fBTrain_PPO\fP"
+.br
+.in -1c
+.SS "Variables"
+
+.in +1c
+.ti -1c
+.RI "\fBTrain_PPO\&.ppo_path\fP = os\&.path\&.join('Training', 'Saved Models', f'Drone_PPO_Model_{datetime\&.datetime\&.now()\&.strftime('%Y_%m_%d_%H_%M_%S')}')"
+.br
+.ti -1c
+.RI "\fBTrain_PPO\&.log_path\fP = os\&.path\&.join('Training', 'Logs')"
+.br
+.ti -1c
+.RI "int \fBTrain_PPO\&.episodes\fP = 100"
+.br
+.ti -1c
+.RI "\fBTrain_PPO\&.env\fP = \fBDroneRobot\fP()"
+.br
+.ti -1c
+.RI "\fBTrain_PPO\&.debugMode\fP"
+.br
+.ti -1c
+.RI "int \fBTrain_PPO\&.timesteps\fP = env\&.steps_per_episode * \fBepisodes\fP"
+.br
+.ti -1c
+.RI "\fBTrain_PPO\&.model\fP = PPO('MlpPolicy', \fBenv\fP, verbose=1, tensorboard_log=\fBlog_path\fP, device='cpu', ent_coef=10, learning_rate=0\&.0001)"
+.br
+.ti -1c
+.RI "\fBTrain_PPO\&.total_timesteps\fP"
+.br
+.in -1c
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for droneProject from the source code\&.

@@ -28,23 +28,20 @@ import random
 class DroneRobot(RobotSupervisorEnv):
 
     def __init__(self):
-        """
-        /*
-        * @brief Initializes the DroneRobot environment and sets default parameters.
-        *
-        * This constructor initializes the simulation environment, sets up the observation and action spaces,
-        * and defines key parameters such as PID gains, motor power, and episode configurations.
-        * Additionally, it configures the random seed for reproducibility and sets up the simulation timestep.
-        *
-        * @details
-        * - Initializes debug mode, random seed, and task status.
-        * - Configures observation and action spaces using Gym's `Box`.
-        * - Sets up PID gains with random initial values and motor power to zero.
-        * - Defines simulation parameters such as timestep and maximum steps per episode.
-        * - Maintains error tracking for the PID controller.
-        *
-        * @note The method assumes that the superclass `RobotSupervisorEnv` is correctly implemented.
-        */
+        """@brief Initializes the DroneRobot environment and sets default parameters.
+    
+        This constructor initializes the simulation environment, sets up the observation and action spaces,
+        and defines key parameters such as PID gains, motor power, and episode configurations.
+        Additionally, it configures the random seed for reproducibility and sets up the simulation timestep.
+    
+        @details
+        - Initializes debug mode, random seed, and task status.
+        - Configures observation and action spaces using Gym's `Box`.
+        - Sets up PID gains with random initial values and motor power to zero.
+        - Defines simulation parameters such as timestep and maximum steps per episode.
+        - Maintains error tracking for the PID controller.
+    
+        @note The method assumes that the superclass `RobotSupervisorEnv` is correctly implemented.
         """
         super().__init__()
         self.debugMode = False  # Set to True to enable debug mode
@@ -135,25 +132,25 @@ class DroneRobot(RobotSupervisorEnv):
 
     def update_motor_power(self, current_location):
         """
-            /**
-            * @brief Updates the motor power for the drone based on the PID controller and the current location.
-            *
-            * This method calculates the error between the drone's current location and the target location for
-            * each axis (x, y, z) and adjusts the motor power accordingly using PID control. It also applies yaw
-            * control to align the drone towards the target direction. For testing purposes, yaw gain can be set to 
-            * zero.
-            *
-            * @param current_location A list containing the drone's current position (x, y, z) and yaw angle.
-            *
-            * @details
-            * - Computes proportional (P), integral (I), and derivative (D) terms for PID control on each axis.
-            * - Normalizes yaw angle errors to the range [-π, π].
-            * - Updates motor power values for maintaining stability and reaching the target location.
-            * - Clips motor power values to ensure they remain within the allowed range.
-            *
-            * @note Assumes the `current_location` input includes yaw as the third element.
-            * @see self.pid_gains, self.motor_power
-            */
+            
+             @brief Updates the motor power for the drone based on the PID controller and the current location.
+            
+             This method calculates the error between the drone's current location and the target location for
+             each axis (x, y, z) and adjusts the motor power accordingly using PID control. It also applies yaw
+             control to align the drone towards the target direction. For testing purposes, yaw gain can be set to 
+             zero.
+            
+             @param current_location A list containing the drone's current position (x, y, z) and yaw angle.
+            
+             @details
+             - Computes proportional (P), integral (I), and derivative (D) terms for PID control on each axis.
+             - Normalizes yaw angle errors to the range [-π, π].
+             - Updates motor power values for maintaining stability and reaching the target location.
+             - Clips motor power values to ensure they remain within the allowed range.
+            
+             @note Assumes the `current_location` input includes yaw as the third element.
+             @see self.pid_gains, self.motor_power
+            
 
         """
         # Compute error between target and current position
@@ -236,22 +233,22 @@ class DroneRobot(RobotSupervisorEnv):
 
     def axis_angle_to_euler(self,axis_angle):
         """
-            /**
-            * @brief Converts an axis-angle representation to Euler angles in degrees.
-            *
-            * This method takes a 4D vector representing an axis-angle (x, y, z, angle)
-            * and converts it to the corresponding Euler angles (roll, pitch, yaw) in degrees.
-            *
-            * @param axis_angle A list or tuple containing the axis components (x, y, z) and the rotation angle.
-            * @return A tuple (roll, pitch, yaw) representing the Euler angles in degrees.
-            *
-            * @details
-            * - Normalizes the axis vector if its magnitude is non-zero.
-            * - Converts the axis-angle to a quaternion and then to Euler angles.
-            * - Handles edge cases to ensure angles are properly constrained.
-            *
-            * @note The input angle is expected in radians.
-            */
+            
+             @brief Converts an axis-angle representation to Euler angles in degrees.
+            
+             This method takes a 4D vector representing an axis-angle (x, y, z, angle)
+             and converts it to the corresponding Euler angles (roll, pitch, yaw) in degrees.
+            
+             @param axis_angle A list or tuple containing the axis components (x, y, z) and the rotation angle.
+             @return A tuple (roll, pitch, yaw) representing the Euler angles in degrees.
+            
+             @details
+             - Normalizes the axis vector if its magnitude is non-zero.
+             - Converts the axis-angle to a quaternion and then to Euler angles.
+             - Handles edge cases to ensure angles are properly constrained.
+            
+             @note The input angle is expected in radians.
+            
 
         """
         x, y, z, angle = axis_angle
@@ -292,23 +289,23 @@ class DroneRobot(RobotSupervisorEnv):
 
     def get_observations(self):
         """
-            /**
-            * @brief Retrieves the current state of the drone as observations.
-            *
-            * This method gathers the drone's current position, orientation, and velocity, and combines them
-            * into a single observation vector.
-            *
-            * @return A numpy array containing the concatenated observations: 
-            *         [position (x, y, z), rotation (roll, pitch, yaw), velocity (linear and angular)].
-            *
-            * @details
-            * - The position is obtained from the `translation` field of the robot.
-            * - The rotation is converted from axis-angle representation to Euler angles using `axis_angle_to_euler`.
-            * - The velocity includes both linear and angular components.
-            *
-            * @note Assumes that the Webots simulation provides the required fields and velocity information.
-            * @see axis_angle_to_euler
-            */
+            
+             @brief Retrieves the current state of the drone as observations.
+            
+             This method gathers the drone's current position, orientation, and velocity, and combines them
+             into a single observation vector.
+            
+             @return A numpy array containing the concatenated observations: 
+                     [position (x, y, z), rotation (roll, pitch, yaw), velocity (linear and angular)].
+            
+             @details
+             - The position is obtained from the `translation` field of the robot.
+             - The rotation is converted from axis-angle representation to Euler angles using `axis_angle_to_euler`.
+             - The velocity includes both linear and angular components.
+            
+             @note Assumes that the Webots simulation provides the required fields and velocity information.
+             @see axis_angle_to_euler
+            
 
         """
 
@@ -325,18 +322,18 @@ class DroneRobot(RobotSupervisorEnv):
 
     def get_default_observation(self):
         """
-            /**
-            * @brief Provides a default observation vector.
-            *
-            * This method returns a default observation consisting of zero values, which matches the shape
-            * of the observation space.
-            *
-            * @return A list of zeros with a length equal to the number of dimensions in the observation space.
-            *
-            * @details
-            * - The default observation is used as a placeholder or initialization value when no meaningful
-            *   observation data is available.
-            */
+            
+             @brief Provides a default observation vector.
+            
+             This method returns a default observation consisting of zero values, which matches the shape
+             of the observation space.
+            
+             @return A list of zeros with a length equal to the number of dimensions in the observation space.
+            
+             @details
+             - The default observation is used as a placeholder or initialization value when no meaningful
+               observation data is available.
+            
 
         """
         # This method just returns a zero vector as a default observation
@@ -344,26 +341,26 @@ class DroneRobot(RobotSupervisorEnv):
 
     def get_reward(self, action=None):
         """
-            /**
-            * @brief Computes the reward based on the drone's current state and actions.
-            *
-            * This method evaluates the drone's performance in the environment by calculating a composite reward
-            * that combines various factors such as distance to the target, stability, efficiency, and task completion.
-            *
-            * @param action (Optional) The action taken by the drone, though not directly used in the current implementation.
-            * @return A float value representing the computed reward for the current timestep.
-            *
-            * @details
-            * - **Distance to Target:** A quadratic penalty based on the squared distance to the target location.
-            * - **Stability Reward:** Penalizes abrupt changes in velocity.
-            * - **Efficiency Reward:** Adds a small time penalty to encourage faster task completion.
-            * - **Stay Penalty:** Penalizes the drone for staying near the origin after a certain number of steps.
-            * - **Direction Reward:** Rewards the drone for moving in the direction of the target.
-            * - **Goal Bonus:** Provides a significant reward for reaching the target location.
-            * - **Time Penalty:** Encourages efficiency by applying a small penalty for each timestep.
-            *
-            * @note This function assumes observations include position and velocity as described in `get_observations`.
-            */
+            
+             @brief Computes the reward based on the drone's current state and actions.
+            
+             This method evaluates the drone's performance in the environment by calculating a composite reward
+             that combines various factors such as distance to the target, stability, efficiency, and task completion.
+            
+             @param action (Optional) The action taken by the drone, though not directly used in the current implementation.
+             @return A float value representing the computed reward for the current timestep.
+            
+             @details
+             - **Distance to Target:** A quadratic penalty based on the squared distance to the target location.
+             - **Stability Reward:** Penalizes abrupt changes in velocity.
+             - **Efficiency Reward:** Adds a small time penalty to encourage faster task completion.
+             - **Stay Penalty:** Penalizes the drone for staying near the origin after a certain number of steps.
+             - **Direction Reward:** Rewards the drone for moving in the direction of the target.
+             - **Goal Bonus:** Provides a significant reward for reaching the target location.
+             - **Time Penalty:** Encourages efficiency by applying a small penalty for each timestep.
+            
+             @note This function assumes observations include position and velocity as described in `get_observations`.
+            
 
         """
         observations = self.get_observations()
@@ -413,24 +410,24 @@ class DroneRobot(RobotSupervisorEnv):
     
     def is_done(self):    
         """
-            /**
-            * @brief Checks whether the current episode is complete.
-            *
-            * This method evaluates conditions to determine if the episode should terminate, such as exceeding
-            * step limits, going out of bounds, or exceeding angular constraints.
-            *
-            * @return `True` if the episode is complete, `False` otherwise.
-            *
-            * @details
-            * - **Step Count Trigger:** The episode ends if the current step count exceeds the maximum allowed steps.
-            * - **Location Bound Trigger:** The episode terminates if the drone's position deviates beyond a predefined
-            *   bound from the target location on any axis.
-            * - **Angle Bound Trigger:** The episode terminates if any rotational angle (roll, pitch, yaw) exceeds
-            *   the specified angular limit.
-            *
-            * @note Observations are fetched from `get_observations`, and positional and angular bounds are defined
-            *       within the function.
-            */
+            
+             @brief Checks whether the current episode is complete.
+            
+             This method evaluates conditions to determine if the episode should terminate, such as exceeding
+             step limits, going out of bounds, or exceeding angular constraints.
+            
+             @return `True` if the episode is complete, `False` otherwise.
+            
+             @details
+             - **Step Count Trigger:** The episode ends if the current step count exceeds the maximum allowed steps.
+             - **Location Bound Trigger:** The episode terminates if the drone's position deviates beyond a predefined
+               bound from the target location on any axis.
+             - **Angle Bound Trigger:** The episode terminates if any rotational angle (roll, pitch, yaw) exceeds
+               the specified angular limit.
+            
+             @note Observations are fetched from `get_observations`, and positional and angular bounds are defined
+                   within the function.
+            
 
         """  
         if self.cur_step_count >= self.steps_per_episode:
@@ -465,20 +462,20 @@ class DroneRobot(RobotSupervisorEnv):
 
     def solved(self):
         """
-            /**
-            * @brief Determines if the task is considered "solved."
-            *
-            * The task is deemed solved if the mean score of the last 100 episodes exceeds
-            * a predefined threshold (`avg_target_score`), indicating consistent performance.
-            *
-            * @return `True` if the task is solved, `False` otherwise.
-            *
-            * @details
-            * - **Threshold Check:** The task is solved if the mean score of the last 100 episodes is greater than `avg_target_score`.
-            * - If the condition is met, the `saveOK` flag is set to `True`.
-            *
-            * @note Requires the `episode_score_list` to contain at least 100 episodes.
-            */
+            
+             @brief Determines if the task is considered "solved."
+            
+             The task is deemed solved if the mean score of the last 100 episodes exceeds
+             a predefined threshold (`avg_target_score`), indicating consistent performance.
+            
+             @return `True` if the task is solved, `False` otherwise.
+            
+             @details
+             - **Threshold Check:** The task is solved if the mean score of the last 100 episodes is greater than `avg_target_score`.
+             - If the condition is met, the `saveOK` flag is set to `True`.
+            
+             @note Requires the `episode_score_list` to contain at least 100 episodes.
+            
 
         """
         if len(self.episode_score_list) > 100:  # Last 100 trials
@@ -490,54 +487,54 @@ class DroneRobot(RobotSupervisorEnv):
 
     def get_info(self):
         """
-            /**
-            * @brief Provides additional information about the environment.
-            *
-            * This method returns a dictionary containing environment-specific details.
-            *
-            * @return A dictionary with key-value pairs representing additional environment information.
-            *
-            * @details
-            * - Currently, this method returns a placeholder dictionary `{"Dummy": "dummy"}`.
-            * - Can be extended to include meaningful diagnostic or metadata information.
-            */
+            
+             @brief Provides additional information about the environment.
+            
+             This method returns a dictionary containing environment-specific details.
+            
+             @return A dictionary with key-value pairs representing additional environment information.
+            
+             @details
+             - Currently, this method returns a placeholder dictionary `{"Dummy": "dummy"}`.
+             - Can be extended to include meaningful diagnostic or metadata information.
+            
 
         """
 
         return {"Dummy": "dummy"}
     def launchTensorBoard(self,log_path):
         """
-            /**
-            * @brief Launches TensorBoard for monitoring training progress.
-            *
-            * This method runs a system command to start TensorBoard using the specified log directory.
-            *
-            * @param log_path The path to the directory containing TensorBoard log files.
-            *
-            * @details
-            * - Executes the command `tensorboard --logdir=<log_path>` to launch TensorBoard.
-            * - Requires TensorBoard to be installed and accessible from the system's command line.
-            *
-            * @note Ensure the specified `log_path` is valid and contains log files for visualization.
-            */
+            
+             @brief Launches TensorBoard for monitoring training progress.
+            
+             This method runs a system command to start TensorBoard using the specified log directory.
+            
+             @param log_path The path to the directory containing TensorBoard log files.
+            
+             @details
+             - Executes the command `tensorboard --logdir=<log_path>` to launch TensorBoard.
+             - Requires TensorBoard to be installed and accessible from the system's command line.
+            
+             @note Ensure the specified `log_path` is valid and contains log files for visualization.
+            
         """
         os.system('tensorboard --logdir=' + log_path)
         return
     def startTensorBoard(self,log_path):
         """
-            /**
-            * @brief Starts TensorBoard in a separate thread.
-            *
-            * This method creates and starts a new thread to run TensorBoard, ensuring that it does not block the main process.
-            *
-            * @param log_path The path to the directory containing TensorBoard log files.
-            *
-            * @details
-            * - Internally calls `launchTensorBoard` in a separate thread.
-            * - Useful for starting TensorBoard asynchronously during training or simulation.
-            *
-            * @note Ensure the `log_path` is valid and TensorBoard is installed.
-            */
+            
+             @brief Starts TensorBoard in a separate thread.
+            
+             This method creates and starts a new thread to run TensorBoard, ensuring that it does not block the main process.
+            
+             @param log_path The path to the directory containing TensorBoard log files.
+            
+             @details
+             - Internally calls `launchTensorBoard` in a separate thread.
+             - Useful for starting TensorBoard asynchronously during training or simulation.
+            
+             @note Ensure the `log_path` is valid and TensorBoard is installed.
+            
         """
         t = threading.Thread(target=self.launchTensorBoard, args=([log_path]))
         t.start()
@@ -545,43 +542,43 @@ class DroneRobot(RobotSupervisorEnv):
 
     def render(self, mode='human'):
         """
-            /**
-            * @brief Renders the environment.
-            *
-            * This method is a placeholder for rendering the environment in various modes.
-            *
-            * @param mode The rendering mode (default is `"human"`).
-            *
-            * @details
-            * - Currently, this method is not implemented.
-            * - Can be extended to provide visualizations or other forms of rendering.
-            */
+            
+             @brief Renders the environment.
+            
+             This method is a placeholder for rendering the environment in various modes.
+            
+             @param mode The rendering mode (default is `"human"`).
+            
+             @details
+             - Currently, this method is not implemented.
+             - Can be extended to provide visualizations or other forms of rendering.
+            
         """
         pass
         ## THIS IS AN OVERRIDE FUNCTION ###
         # The actions must be applied once per episode instead of once per step since this is adjusting PID values
     def step(self, action):
-        """    /**
-     * @brief Executes a single simulation step, applying an action and updating the environment.
-     *
-     * This method steps the controller, applies the given action to the robot, and returns the resulting
-     * state of the environment, including observations, reward, termination status, and additional info.
-     *
-     * @param action The action to be applied to the robot, defined by the use case (e.g., integer for discrete actions).
-     * @return A tuple `(observations, reward, done, info)`:
-     *         - `observations`: Current state of the environment.
-     *         - `reward`: Reward received for the action taken.
-     *         - `done`: Boolean indicating whether the episode is complete.
-     *         - `info`: Additional diagnostic information.
-     *
-     * @details
-     * - Increments the step count and initializes motor devices if not already done.
-     * - Applies the action using `apply_action` and updates motor power with `update_motor_power`.
-     * - Fetches observations, computes the reward, and checks if the episode is done.
-     * - Handles integration with the Webots supervisor timestep.
-     *
-     * @note Assumes valid initialization of motors and sensors (e.g., GPS, IMU, gyro).
-     */
+        """    
+      @brief Executes a single simulation step, applying an action and updating the environment.
+     
+      This method steps the controller, applies the given action to the robot, and returns the resulting
+      state of the environment, including observations, reward, termination status, and additional info.
+     
+      @param action The action to be applied to the robot, defined by the use case (e.g., integer for discrete actions).
+      @return A tuple `(observations, reward, done, info)`:
+              - `observations`: Current state of the environment.
+              - `reward`: Reward received for the action taken.
+              - `done`: Boolean indicating whether the episode is complete.
+              - `info`: Additional diagnostic information.
+     
+      @details
+      - Increments the step count and initializes motor devices if not already done.
+      - Applies the action using `apply_action` and updates motor power with `update_motor_power`.
+      - Fetches observations, computes the reward, and checks if the episode is done.
+      - Handles integration with the Webots supervisor timestep.
+     
+      @note Assumes valid initialization of motors and sensors (e.g., GPS, IMU, gyro).
+     
         """
         self.cur_step_count += 1
         ## Needs to be defined in step to work properly
@@ -636,22 +633,22 @@ class DroneRobot(RobotSupervisorEnv):
     ## Guess what, another override function. Only change is to add and reset a flag
     def reset(self):
         """
-            /**
-            * @brief Resets the environment to its initial state.
-            *
-            * This method restores the simulation to its default configuration by resetting motor power,
-            * step counters, error terms, and the Webots simulation state.
-            *
-            * @return A default observation, represented as a zero-filled numpy array matching the observation space shape.
-            *
-            * @details
-            * - Resets motor power values to zero and clears PID error terms.
-            * - Resets the Webots simulation state and physics using `simulationReset` and `simulationResetPhysics`.
-            * - Ensures compatibility with Webots versions >R2020b but can be overridden for earlier versions.
-            * - Calls `super().step` to integrate the reset state into the simulation timestep.
-            *
-            * @note This method is backward-compatible, allowing older supervisor implementations to be migrated.
-            */
+            
+             @brief Resets the environment to its initial state.
+            
+             This method restores the simulation to its default configuration by resetting motor power,
+             step counters, error terms, and the Webots simulation state.
+            
+             @return A default observation, represented as a zero-filled numpy array matching the observation space shape.
+            
+             @details
+             - Resets motor power values to zero and clears PID error terms.
+             - Resets the Webots simulation state and physics using `simulationReset` and `simulationResetPhysics`.
+             - Ensures compatibility with Webots versions >R2020b but can be overridden for earlier versions.
+             - Calls `super().step` to integrate the reset state into the simulation timestep.
+            
+             @note This method is backward-compatible, allowing older supervisor implementations to be migrated.
+            
         """
 
         self.motor_power = {
@@ -673,22 +670,22 @@ class DroneRobot(RobotSupervisorEnv):
 
     def apply_action(self, action):
         """
-            /**
-            * @brief Applies the specified action to the drone by updating PID controller gains.
-            *
-            * This method sets the PID gains based on the provided action. If debug mode is active,
-            * the action is ignored, and default PID gains are used instead.
-            *
-            * @param action A list or array containing PID gain values for X, Y, and Z axes in the order:
-            *               [X_P, X_I, X_D, Y_P, Y_I, Y_D, Z_P, Z_I, Z_D].
-            *
-            * @details
-            * - In debug mode, fixed PID gains are applied, and the action parameter is ignored.
-            * - Outside debug mode, the PID gains are updated directly from the action input.
-            * - Resets the last episode score to zero after applying the action.
-            *
-            * @note Ensure that the action parameter contains exactly 9 elements representing the PID gains.
-            */
+            
+             @brief Applies the specified action to the drone by updating PID controller gains.
+            
+             This method sets the PID gains based on the provided action. If debug mode is active,
+             the action is ignored, and default PID gains are used instead.
+            
+             @param action A list or array containing PID gain values for X, Y, and Z axes in the order:
+                           [X_P, X_I, X_D, Y_P, Y_I, Y_D, Z_P, Z_I, Z_D].
+            
+             @details
+             - In debug mode, fixed PID gains are applied, and the action parameter is ignored.
+             - Outside debug mode, the PID gains are updated directly from the action input.
+             - Resets the last episode score to zero after applying the action.
+            
+             @note Ensure that the action parameter contains exactly 9 elements representing the PID gains.
+            
 
         """
 

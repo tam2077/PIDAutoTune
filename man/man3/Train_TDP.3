@@ -1,0 +1,108 @@
+.TH "Train_TDP" 3 "droneProject" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Train_TDP
+.SH SYNOPSIS
+.br
+.PP
+.SS "Variables"
+
+.in +1c
+.ti -1c
+.RI "\fBmodel_path\fP = os\&.path\&.join('Training', 'Saved Models', f'td3_drone_model{datetime\&.datetime\&.now()\&.strftime('%Y_%m_%d_%H_%M_%S')}')"
+.br
+.ti -1c
+.RI "\fBlog_path\fP = os\&.path\&.join('Training', 'Logs', 'td3_drone_logs')"
+.br
+.ti -1c
+.RI "\fBenv\fP = \fBDroneRobot\fP()"
+.br
+.ti -1c
+.RI "\fBtarget_location\fP"
+.br
+.ti -1c
+.RI "\fBdebugMode\fP"
+.br
+.ti -1c
+.RI "\fBn_actions\fP = env\&.action_space\&.shape[\-1]"
+.br
+.ti -1c
+.RI "\fBaction_noise\fP = OrnsteinUhlenbeckActionNoise(mean=np\&.zeros(\fBn_actions\fP), sigma=float(0\&.1) * np\&.ones(\fBn_actions\fP))"
+.br
+.ti -1c
+.RI "int \fBepisodes\fP = 1000"
+.br
+.ti -1c
+.RI "int \fBtimesteps\fP = env\&.steps_per_episode * \fBepisodes\fP"
+.br
+.ti -1c
+.RI "\fBmodel\fP = TD3('MlpPolicy', \fBenv\fP, \fBaction_noise\fP=\fBaction_noise\fP, verbose=1, device='cuda', tensorboard_log=\fBlog_path\fP)"
+.br
+.ti -1c
+.RI "\fBtotal_timesteps\fP"
+.br
+.ti -1c
+.RI "\fBlog_interval\fP"
+.br
+.ti -1c
+.RI "\fBpath\fP"
+.br
+.in -1c
+.SH "Variable Documentation"
+.PP 
+.SS "Train_TDP\&.action_noise = OrnsteinUhlenbeckActionNoise(mean=np\&.zeros(\fBn_actions\fP), sigma=float(0\&.1) * np\&.ones(\fBn_actions\fP))"
+
+.PP
+Definition at line \fB22\fP of file \fBTrain_TDP\&.py\fP\&.
+.SS "Train_TDP\&.debugMode"
+
+.PP
+Definition at line \fB16\fP of file \fBTrain_TDP\&.py\fP\&.
+.SS "Train_TDP\&.env = \fBDroneRobot\fP()"
+
+.PP
+Definition at line \fB14\fP of file \fBTrain_TDP\&.py\fP\&.
+.SS "int Train_TDP\&.episodes = 1000"
+
+.PP
+Definition at line \fB29\fP of file \fBTrain_TDP\&.py\fP\&.
+.SS "Train_TDP\&.log_interval"
+
+.PP
+Definition at line \fB41\fP of file \fBTrain_TDP\&.py\fP\&.
+.SS "Train_TDP\&.log_path = os\&.path\&.join('Training', 'Logs', 'td3_drone_logs')"
+
+.PP
+Definition at line \fB11\fP of file \fBTrain_TDP\&.py\fP\&.
+.SS "Train_TDP\&.model = TD3('MlpPolicy', \fBenv\fP, \fBaction_noise\fP=\fBaction_noise\fP, verbose=1, device='cuda', tensorboard_log=\fBlog_path\fP)"
+
+.PP
+Definition at line \fB33\fP of file \fBTrain_TDP\&.py\fP\&.
+.SS "Train_TDP\&.model_path = os\&.path\&.join('Training', 'Saved Models', f'td3_drone_model{datetime\&.datetime\&.now()\&.strftime('%Y_%m_%d_%H_%M_%S')}')"
+
+.PP
+Definition at line \fB9\fP of file \fBTrain_TDP\&.py\fP\&.
+.SS "Train_TDP\&.n_actions = env\&.action_space\&.shape[\-1]"
+
+.PP
+Definition at line \fB19\fP of file \fBTrain_TDP\&.py\fP\&.
+.SS "Train_TDP\&.path"
+
+.PP
+Definition at line \fB45\fP of file \fBTrain_TDP\&.py\fP\&.
+.SS "Train_TDP\&.target_location"
+
+.PP
+Definition at line \fB15\fP of file \fBTrain_TDP\&.py\fP\&.
+.SS "Train_TDP\&.timesteps = env\&.steps_per_episode * \fBepisodes\fP"
+
+.PP
+Definition at line \fB30\fP of file \fBTrain_TDP\&.py\fP\&.
+.SS "Train_TDP\&.total_timesteps"
+
+.PP
+Definition at line \fB41\fP of file \fBTrain_TDP\&.py\fP\&.
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for droneProject from the source code\&.
