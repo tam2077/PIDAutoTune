@@ -1,0 +1,26 @@
+\doxysection{controllers/\+Train\+\_\+\+PPO.py File Reference}
+\hypertarget{_train___p_p_o_8py}{}\label{_train___p_p_o_8py}\index{controllers/Train\_PPO.py@{controllers/Train\_PPO.py}}
+\doxysubsubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+namespace \mbox{\hyperlink{namespace_train___p_p_o}{Train\+\_\+\+PPO}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{namespace_train___p_p_o_ab2c9bb6e2ca386d0f6f2f78b24af9690}{Train\+\_\+\+PPO.\+ppo\+\_\+path}} = os.\+path.\+join(\textquotesingle{}Training\textquotesingle{}, \textquotesingle{}Saved Models\textquotesingle{}, f\textquotesingle{}Drone\+\_\+\+PPO\+\_\+\+Model\+\_\+\{datetime.\+datetime.\+now().strftime("{}\%Y\+\_\+\%m\+\_\+\%d\+\_\+\%H\+\_\+\%M\+\_\+\%S"{})\}\textquotesingle{})
+\item 
+\mbox{\hyperlink{namespace_train___p_p_o_a743c86e3a980e4cfa04efeb95e97c566}{Train\+\_\+\+PPO.\+log\+\_\+path}} = os.\+path.\+join(\textquotesingle{}Training\textquotesingle{}, \textquotesingle{}Logs\textquotesingle{})
+\item 
+int \mbox{\hyperlink{namespace_train___p_p_o_a6a03814d7a1b6dba3f2153df29ad580e}{Train\+\_\+\+PPO.\+episodes}} = 100
+\item 
+\mbox{\hyperlink{namespace_train___p_p_o_a6e94d3127f1a42b415db0000ee2ca11d}{Train\+\_\+\+PPO.\+env}} = \mbox{\hyperlink{classdrone_robot_1_1_drone_robot}{Drone\+Robot}}()
+\item 
+\mbox{\hyperlink{namespace_train___p_p_o_a6e6cb4b7b5cd6268ca3a55366f2288ab}{Train\+\_\+\+PPO.\+debug\+Mode}}
+\item 
+int \mbox{\hyperlink{namespace_train___p_p_o_a735a879ad35e2c539ffabbe3c10c6b03}{Train\+\_\+\+PPO.\+timesteps}} = env.\+steps\+\_\+per\+\_\+episode \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{namespace_train___p_p_o_a6a03814d7a1b6dba3f2153df29ad580e}{episodes}}
+\item 
+\mbox{\hyperlink{namespace_train___p_p_o_a179ed35b12847fe8e60e8a86bf57bd82}{Train\+\_\+\+PPO.\+model}} = PPO(\textquotesingle{}Mlp\+Policy\textquotesingle{}, \mbox{\hyperlink{namespace_train___p_p_o_a6e94d3127f1a42b415db0000ee2ca11d}{env}}, verbose=1, tensorboard\+\_\+log=\mbox{\hyperlink{namespace_train___p_p_o_a743c86e3a980e4cfa04efeb95e97c566}{log\+\_\+path}}, device=\textquotesingle{}cpu\textquotesingle{}, ent\+\_\+coef=10, learning\+\_\+rate=0.\+0001)
+\item 
+\mbox{\hyperlink{namespace_train___p_p_o_a08ebae002f6cf529ee1301cb186e664f}{Train\+\_\+\+PPO.\+total\+\_\+timesteps}}
+\end{DoxyCompactItemize}
