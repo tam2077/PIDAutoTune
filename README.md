@@ -6,3 +6,5 @@ Clone the repo, install requirements.txt in a conda environment, and run your ch
 This project requires pytorch
 Install from https://pytorch.org/get-started/locally/
 
+The docs are available at
+https://tam2077.github.io/PIDAutoTune/index.html
