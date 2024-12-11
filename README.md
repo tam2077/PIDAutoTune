@@ -3,3 +3,6 @@ This is a work in progress, not meant for any critical systems but as proof of c
 
 Usage:
 Clone the repo, install requirements.txt in a conda environment, and run your choice of training method from the controllers folder
+This project requires pytorch
+Install from https://pytorch.org/get-started/locally/
+
