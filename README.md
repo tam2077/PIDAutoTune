@@ -45,7 +45,10 @@ To begin an experimental training session, navigate to the `controllers` directo
 ```bash
 cd controllers
 python Train_SAC.py
-You can monitor training metrics, reward progression, and agent performance via TensorBoard (logs are saved in Training/Logs/).
 ```
-Disclaimer
+You can monitor training metrics, reward progression, and agent performance via TensorBoard (logs are saved in Training/Logs/).
+
+```Disclaimer
 This project is currently a work-in-progress experimental sandbox. It is strictly intended for the educational exploration of machine learning algorithms and is not designed or validated for use in critical, real-world flight systems or production environments.
+```
+
